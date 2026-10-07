@@ -30,6 +30,13 @@ class CartController extends Controller
                 'components'  => $items->values(),
             ];
         })->values();
+        $packageBuilds = $cart->items->where('source_type', 'package')->groupBy('build_id')->map(function ($items, $buildId) {
+            return [
+                'build_id'    => $buildId,
+                'total_price' => $items->sum(fn ($i) => $i->price_snapshot * $i->qty),
+                'components'  => $items->values(),
+            ];
+        })->values();
 
         return response()->json([
             'status' => 'success',
@@ -41,6 +48,7 @@ class CartController extends Controller
                 'item_count'     => $cart->items->sum('qty'),
                 'catalog_items'  => $catalogItems,
                 'builder_builds' => $builderBuilds,
+                'package_builds' => $packageBuilds,
             ],
         ]);
     }

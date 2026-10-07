@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PrebuiltPackageController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PromotionController;
+use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,12 +54,22 @@ Route::post('/products', [ProductController::class, 'store'])->middleware(['auth
 Route::put('/products/{id}', [ProductController::class, 'update'])->middleware(['auth.token', 'admin']);
 Route::delete('/products/{id}', [ProductController::class, 'destroy'])->middleware(['auth.token', 'admin']);
 
-// Prebuilt PC Packages
+// Prebuilt PC Packages (baca publik, tulis + beli admin/user)
 Route::get('/packages', [PrebuiltPackageController::class, 'index']);
 Route::get('/packages/{id}', [PrebuiltPackageController::class, 'show']);
+Route::post('/packages/{id}/add-to-cart', [PrebuiltPackageController::class, 'addToCart'])->middleware('owner');
+Route::post('/packages', [PrebuiltPackageController::class, 'store'])->middleware(['auth.token', 'admin']);
+Route::put('/packages/{id}', [PrebuiltPackageController::class, 'update'])->middleware(['auth.token', 'admin']);
+Route::delete('/packages/{id}', [PrebuiltPackageController::class, 'destroy'])->middleware(['auth.token', 'admin']);
 
-// Promotions
+// Promotions (baca publik aktif, tulis admin)
 Route::get('/promotions', [PromotionController::class, 'index']);
+Route::post('/promotions', [PromotionController::class, 'store'])->middleware(['auth.token', 'admin']);
+Route::put('/promotions/{id}', [PromotionController::class, 'update'])->middleware(['auth.token', 'admin']);
+Route::delete('/promotions/{id}', [PromotionController::class, 'destroy'])->middleware(['auth.token', 'admin']);
+
+// Admin dashboard stats
+Route::get('/admin/stats', [StatsController::class, 'index'])->middleware(['auth.token', 'admin']);
 
 // Shopping Cart (user_id wajib milik token; guest pakai session_id)
 Route::get('/cart', [CartController::class, 'show'])->middleware('owner');

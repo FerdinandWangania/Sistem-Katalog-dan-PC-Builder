@@ -83,6 +83,7 @@ flowchart TD
 ### 2. Katalog & Promo (publik) → D2/D6/D7
 `GET /products (?category,brand,q,socket,ram_type,sort)`, `GET /products/{id}`,
 `GET /packages`, `GET /packages/{id}`, `GET /promotions` (hanya yang aktif).
+Beli paket: `POST /api/packages/{id}/add-to-cart` → masuk cart sebagai `package_builds` (grup `build_id`).
 Item produk membawa: `_id, category, brand, name, price, discount_price (harga jual), stock, image (URL), specs`.
 
 ### 3. PC Builder → D2, lanjut ke P4
@@ -106,7 +107,9 @@ Status: `pending → processing → shipped → delivered`, atau `cancelled`.
 `POST /payments/{orderId}/pay` (pemilik/admin, simulasi) → payment `paid`, order `processing`.
 
 ### 7. Administrasi (Bearer + admin)
-CRUD produk (`POST/PUT/DELETE /products`), `GET /users`, `PATCH /users/{id}/role`, `PATCH /orders/{id}/status`.
+CRUD produk (`POST/PUT/DELETE /products`), CRUD paket (`POST/PUT/DELETE /packages`),
+CRUD promo (`POST/PUT/DELETE /promotions`), `GET /users`, `PATCH /users/{id}/role`,
+`PATCH /orders/{id}/status`, `GET /admin/stats` (ringkasan user/produk/order/omzet/stok menipis).
 
 ## Catatan untuk Frontend
 - Harga jual = `discount_price > 0 ? discount_price : price`.

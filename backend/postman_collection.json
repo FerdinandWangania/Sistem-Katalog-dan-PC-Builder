@@ -1,378 +1,967 @@
 {
-  "info": {
-    "_postman_id": "pc-store-mongodb-api-v1",
-    "name": "PC Store - MongoDB API",
-    "description": "Koleksi Postman lengkap untuk testing API E-Commerce Toko PC & PC Builder berbasis Laravel 13 + MongoDB NoSQL.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://127.0.0.1:8000/api",
-      "type": "string"
+    "info": {
+        "_postman_id": "pc-store-mongodb-api-v1",
+        "name": "PC Store - MongoDB API",
+        "description": "Koleksi Postman lengkap untuk testing API E-Commerce Toko PC & PC Builder berbasis Laravel 13 + MongoDB NoSQL.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
-    {
-      "key": "user_id",
-      "value": "6ac50153ab5c4d8210010da3",
-      "type": "string"
-    },
-    {
-      "key": "product_id",
-      "value": "6ac50154ab5c4d8210010da7",
-      "type": "string"
-    },
-    {
-      "key": "order_id",
-      "value": "6ac504961955275060059d68",
-      "type": "string"
-    }
-  ],
-  "item": [
-    {
-      "name": "0. Root & Info",
-      "item": [
+    "variable": [
         {
-          "name": "API Info & Healthcheck",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}",
-              "host": ["{{base_url}}"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "1. Users",
-      "item": [
-        {
-          "name": "Get All Users",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/users",
-              "host": ["{{base_url}}"],
-              "path": ["users"]
-            }
-          }
+            "key": "base_url",
+            "value": "http://127.0.0.1:8000/api",
+            "type": "string"
         },
         {
-          "name": "Get Customers Only",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/users?role=customer",
-              "host": ["{{base_url}}"],
-              "path": ["users"],
-              "query": [
+            "key": "user_id",
+            "value": "6ac50153ab5c4d8210010da3",
+            "type": "string"
+        },
+        {
+            "key": "product_id",
+            "value": "6ac50154ab5c4d8210010da7",
+            "type": "string"
+        },
+        {
+            "key": "order_id",
+            "value": "6ac504961955275060059d68",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "0. Root & Info",
+            "item": [
                 {
-                  "key": "role",
-                  "value": "customer"
+                    "name": "API Info & Healthcheck",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    }
                 }
-              ]
-            }
-          }
+            ]
         },
         {
-          "name": "Get User Detail",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/users/{{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["users", "{{user_id}}"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "2. Products",
-      "item": [
-        {
-          "name": "Get All Products",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products",
-              "host": ["{{base_url}}"],
-              "path": ["products"]
-            }
-          }
-        },
-        {
-          "name": "Filter Products (Category & Brand)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products?category=CPU&brand=Intel",
-              "host": ["{{base_url}}"],
-              "path": ["products"],
-              "query": [
+            "name": "1. Users",
+            "item": [
                 {
-                  "key": "category",
-                  "value": "CPU"
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        }
+                    }
                 },
                 {
-                  "key": "brand",
-                  "value": "Intel"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Search Products (q=RTX)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products?q=RTX",
-              "host": ["{{base_url}}"],
-              "path": ["products"],
-              "query": [
+                    "name": "Get Customers Only",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users?role=customer",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "users"
+                            ],
+                            "query": [
+                                {
+                                    "key": "role",
+                                    "value": "customer"
+                                }
+                            ]
+                        }
+                    }
+                },
                 {
-                  "key": "q",
-                  "value": "RTX"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Product Detail",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/products/{{product_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["products", "{{product_id}}"]
-            }
-          }
-        },
-        {
-          "name": "Create Product (Admin)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"category\": \"Monitor\",\n  \"brand\": \"LG\",\n  \"name\": \"LG UltraGear 27GR95QE OLED 240Hz\",\n  \"price\": 13500000,\n  \"discount_price\": 12900000,\n  \"stock\": 10,\n  \"specs\": {\n    \"size\": \"27 inch\",\n    \"panel\": \"OLED\",\n    \"refresh_rate\": \"240Hz\",\n    \"resolution\": \"2560x1440 QHD\",\n    \"response_time\": \"0.03ms\"\n  }\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/products",
-              "host": ["{{base_url}}"],
-              "path": ["products"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "3. Prebuilt Packages",
-      "item": [
-        {
-          "name": "Get All PC Packages",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/packages",
-              "host": ["{{base_url}}"],
-              "path": ["packages"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "4. Promotions",
-      "item": [
-        {
-          "name": "Get All Active Promotions",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/promotions",
-              "host": ["{{base_url}}"],
-              "path": ["promotions"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "5. Shopping Cart",
-      "item": [
-        {
-          "name": "Get Cart",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/cart?user_id={{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["cart"],
-              "query": [
+                    "name": "Get User Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users/{{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "users",
+                                "{{user_id}}"
+                            ]
+                        }
+                    }
+                },
                 {
-                  "key": "user_id",
-                  "value": "{{user_id}}"
+                    "name": "Update User Role (Admin)",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users/:id/role",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "users",
+                                ":id",
+                                "role"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"role\":\"admin\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
                 }
-              ]
-            }
-          }
+            ]
         },
         {
-          "name": "Add Item to Cart (Catalog)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"product_id\": \"{{product_id}}\",\n  \"qty\": 1,\n  \"source_type\": \"catalog\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/cart/items",
-              "host": ["{{base_url}}"],
-              "path": ["cart", "items"]
-            }
-          }
-        },
-        {
-          "name": "Add Item to Cart (PC Builder)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"product_id\": \"{{product_id}}\",\n  \"qty\": 1,\n  \"source_type\": \"builder\",\n  \"build_id\": \"build-gaming-rig-001\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/cart/items",
-              "host": ["{{base_url}}"],
-              "path": ["cart", "items"]
-            }
-          }
-        },
-        {
-          "name": "Clear Cart",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"user_id\": \"{{user_id}}\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/cart/clear",
-              "host": ["{{base_url}}"],
-              "path": ["cart", "clear"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "6. Orders & Checkout",
-      "item": [
-        {
-          "name": "Checkout Cart to Order",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"shipping_address\": \"Jl. Jendral Sudirman No. 45, Jakarta Selatan\",\n  \"shipping_fee\": 25000,\n  \"gateway_provider\": \"midtrans\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/orders/checkout",
-              "host": ["{{base_url}}"],
-              "path": ["orders", "checkout"]
-            }
-          }
-        },
-        {
-          "name": "Get User Orders",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/orders?user_id={{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["orders"],
-              "query": [
+            "name": "2. Products",
+            "item": [
                 {
-                  "key": "user_id",
-                  "value": "{{user_id}}"
+                    "name": "Get All Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/products",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "products"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Filter Products (Category & Brand)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/products?category=CPU&brand=Intel",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "CPU"
+                                },
+                                {
+                                    "key": "brand",
+                                    "value": "Intel"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Products (q=RTX)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/products?q=RTX",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "RTX"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Product Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/products/{{product_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "products",
+                                "{{product_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Product (Admin)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"category\": \"Monitor\",\n  \"brand\": \"LG\",\n  \"name\": \"LG UltraGear 27GR95QE OLED 240Hz\",\n  \"price\": 13500000,\n  \"discount_price\": 12900000,\n  \"stock\": 10,\n  \"specs\": {\n    \"size\": \"27 inch\",\n    \"panel\": \"OLED\",\n    \"refresh_rate\": \"240Hz\",\n    \"resolution\": \"2560x1440 QHD\",\n    \"response_time\": \"0.03ms\"\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/products",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "products"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Product (Admin)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/products/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "products",
+                                ":id"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"price\":1000000,\"stock\":10}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Product (Admin)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/products/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "products",
+                                ":id"
+                            ]
+                        }
+                    }
                 }
-              ]
-            }
-          }
+            ]
         },
         {
-          "name": "Get Order Detail",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/orders/{{order_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["orders", "{{order_id}}"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "7. Payments",
-      "item": [
+            "name": "3. Prebuilt Packages",
+            "item": [
+                {
+                    "name": "Get All PC Packages",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/packages",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "packages"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Add Package to Cart",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/packages/:id/add-to-cart",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "packages",
+                                ":id",
+                                "add-to-cart"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"session_id\":\"guest-1\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Create Package (Admin)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/packages",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "packages"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"Paket Kantor\",\"tag\":\"office\",\"product_ids\":[\"PRODUCT_ID_1\",\"PRODUCT_ID_2\"]}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Update Package (Admin)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/packages/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "packages",
+                                ":id"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"Paket Kantor Rev\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Package (Admin)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/packages/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "packages",
+                                ":id"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
         {
-          "name": "Simulate Payment Callback",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/payments/{{order_id}}/pay",
-              "host": ["{{base_url}}"],
-              "path": ["payments", "{{order_id}}", "pay"]
-            }
-          }
+            "name": "4. Promotions",
+            "item": [
+                {
+                    "name": "Get All Active Promotions",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/promotions",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "promotions"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Promotion (Admin)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/promotions",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "promotions"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"title\":\"Promo Baru\",\"brands\":[\"Intel\"],\"discount_percentage\":10,\"start_date\":\"2026-10-08\",\"end_date\":\"2026-10-15\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Update Promotion (Admin)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/promotions/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "promotions",
+                                ":id"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"discount_percentage\":15}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Promotion (Admin)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/promotions/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "promotions",
+                                ":id"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "5. Shopping Cart",
+            "item": [
+                {
+                    "name": "Get Cart",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/cart?user_id={{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "cart"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Add Item to Cart (Catalog)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"product_id\": \"{{product_id}}\",\n  \"qty\": 1,\n  \"source_type\": \"catalog\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/cart/items",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "cart",
+                                "items"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Add Item to Cart (PC Builder)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"product_id\": \"{{product_id}}\",\n  \"qty\": 1,\n  \"source_type\": \"builder\",\n  \"build_id\": \"build-gaming-rig-001\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/cart/items",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "cart",
+                                "items"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Clear Cart",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"user_id\": \"{{user_id}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/cart/clear",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "cart",
+                                "clear"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Remove Cart Item",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/cart/items/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "cart",
+                                "items",
+                                ":id"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "6. Orders & Checkout",
+            "item": [
+                {
+                    "name": "Checkout Cart to Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"shipping_address\": \"Jl. Jendral Sudirman No. 45, Jakarta Selatan\",\n  \"shipping_fee\": 25000,\n  \"gateway_provider\": \"midtrans\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/orders/checkout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "orders",
+                                "checkout"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get User Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/orders?user_id={{user_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "orders"
+                            ],
+                            "query": [
+                                {
+                                    "key": "user_id",
+                                    "value": "{{user_id}}"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Order Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/orders/{{order_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "orders",
+                                "{{order_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Cancel Order (Owner)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/orders/:id/cancel",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "orders",
+                                ":id",
+                                "cancel"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Order Status (Admin)",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/orders/:id/status",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "orders",
+                                ":id",
+                                "status"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"status\":\"shipped\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "7. Payments",
+            "item": [
+                {
+                    "name": "Simulate Payment Callback (Owner/Admin)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/payments/{{order_id}}/pay",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "{{order_id}}",
+                                "pay"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "0. Auth",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "register"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"Tester\",\"email\":\"tester@mail.com\",\"password\":\"secret123\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "login"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"email\":\"tester@mail.com\",\"password\":\"secret123\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Login Google",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/login/google",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "login",
+                                "google"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"id_token\":\"GOOGLE_ID_TOKEN\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Get Me",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/me",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/logout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "logout"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Forgot Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/forgot-password",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "forgot-password"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"email\":\"tester@mail.com\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Reset Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/reset-password",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "reset-password"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"email\":\"tester@mail.com\",\"token\":\"RESET_TOKEN\",\"password\":\"baru1234\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Verify Email",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/verify-email",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "verify-email"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"email\":\"tester@mail.com\",\"token\":\"VERIFY_TOKEN\"}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "8. Admin",
+            "item": [
+                {
+                    "name": "Dashboard Stats (Admin)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/admin/stats",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "stats"
+                            ]
+                        }
+                    }
+                }
+            ]
         }
-      ]
-    }
-  ]
+    ]
 }
