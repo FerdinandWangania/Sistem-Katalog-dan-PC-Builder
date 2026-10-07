@@ -105,6 +105,7 @@ class ProductController extends Controller
             'price'          => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0',
             'stock'          => 'required|integer|min:0',
+            'image'          => 'nullable|string|max:2048',
             'specs'          => 'nullable|array',
         ]);
 
@@ -139,6 +140,7 @@ class ProductController extends Controller
             'price'          => 'sometimes|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0',
             'stock'          => 'sometimes|integer|min:0',
+            'image'          => 'nullable|string|max:2048',
             'specs'          => 'nullable|array',
         ]);
 

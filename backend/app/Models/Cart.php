@@ -45,7 +45,8 @@ class Cart extends Model
 
     public function recalculateTotal(): void
     {
-        $this->total_price = $this->items()->sum('price_snapshot');
+        $this->total_price = (float) $this->items()->get()
+            ->sum(fn ($i) => $i->price_snapshot * $i->qty);
         $this->save();
     }
 }

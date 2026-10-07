@@ -8,14 +8,14 @@ use MongoDB\Laravel\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
 /**
- * Model User — unified users collection (role: customer | admin)
+ * Model User ï¿½ unified users collection (role: customer | admin)
  *
  * @property \MongoDB\BSON\ObjectId $_id
  * @property string $name
  * @property string $email
  * @property string $password
  * @property string|null $phone
- * @property string $role  — 'customer' | 'admin'
+ * @property string $role  ï¿½ 'customer' | 'admin'
  * @property \Carbon\Carbon $created_at
  */
 class User extends Model implements AuthenticatableContract
@@ -31,17 +31,32 @@ class User extends Model implements AuthenticatableContract
         'password',
         'phone',
         'role',
+        'google_id',
+        'avatar',
+        'api_token',
+        'token_expires_at',
+        'email_verified_at',
+        'verify_token',
+        'reset_token',
+        'reset_expires_at',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'api_token',
+        'token_expires_at',
+        'verify_token',
+        'reset_token',
+        'reset_expires_at',
     ];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
+            'token_expires_at'  => 'datetime',
+            'reset_expires_at'  => 'datetime',
             'password'          => 'hashed',
             'created_at'        => 'datetime',
         ];

@@ -80,6 +80,21 @@ class CartController extends Controller
         $sourceType = $validated['source_type'] ?? 'catalog';
         $buildId = $validated['build_id'] ?? ($sourceType === 'builder' ? (string) new ObjectId() : null);
 
+        // Cek stok tersedia (fail fast sebelum masuk keranjang)
+        $existingQty = 0;
+        if ($sourceType === 'catalog') {
+            $existingQty = (int) (CartItem::where('cart_id', $cart->_id)
+                ->where('product_id', $product->_id)
+                ->where('source_type', 'catalog')
+                ->first()?->qty ?? 0);
+        }
+        if ($product->stock < $existingQty + $qty) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => "Stok {$product->name} tidak mencukupi (tersedia: {$product->stock}).",
+            ], 422);
+        }
+
         // Jika katalog biasa dan produk sudah ada di keranjang, update qty
         if ($sourceType === 'catalog') {
             $existingItem = CartItem::where('cart_id', $cart->_id)
@@ -123,9 +138,9 @@ class CartController extends Controller
 
     /**
      * Hapus item dari keranjang.
-     * DELETE /api/cart/items/{id}
+     * DELETE /api/cart/items/{id}?user_id=... atau ?session_id=...
      */
-    public function removeItem(string $itemId): JsonResponse
+    public function removeItem(Request $request, string $itemId): JsonResponse
     {
         $item = CartItem::find($itemId);
 
@@ -136,7 +151,19 @@ class CartController extends Controller
             ], 404);
         }
 
-        $cart = Cart::find($item->cart_id);
+        // Verifikasi kepemilikan: item harus milik cart user/session peminta
+        if ($request->query('user_id') || $request->input('user_id')
+            || $request->query('session_id') || $request->input('session_id')) {
+            $cart = $this->resolveCart($request);
+            if ((string) $item->cart_id !== (string) $cart->_id) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Item ini bukan milik keranjang Anda',
+                ], 403);
+            }
+        } else {
+            $cart = Cart::find($item->cart_id);
+        }
         $item->delete();
 
         if ($cart) {

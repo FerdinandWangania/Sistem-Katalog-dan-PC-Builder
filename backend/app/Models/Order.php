@@ -8,7 +8,8 @@ use MongoDB\Laravel\Eloquent\Model;
  * Order — snapshot checkout dari cart.
  *
  * @property string $_id
- * @property string $user_id
+ * @property string|null $user_id
+ * @property string|null $session_id  -- untuk pesanan guest checkout
  * @property string $order_number    -- e.g. "ORD-20261006-0001"
  * @property float  $subtotal
  * @property float  $shipping_fee
@@ -24,6 +25,7 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'session_id',
         'order_number',
         'subtotal',
         'shipping_fee',

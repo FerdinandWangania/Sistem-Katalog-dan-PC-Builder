@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\Concerns\OrderAccess;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
@@ -10,8 +11,12 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
+    use OrderAccess;
+
     /**
      * Simulasi Pembayaran / Callback Payment Gateway (Midtrans/Xendit).
+     * Hanya pemilik pesanan atau admin.
+     * POST /api/payments/{orderId}/pay?session_id=... (guest)
      * POST /api/payments/{orderId}/pay
      * Body: {
      *   "gateway_status": "settlement" | "capture" | "paid"
@@ -26,6 +31,13 @@ class PaymentController extends Controller
                 'status'  => 'error',
                 'message' => 'Pesanan tidak ditemukan',
             ], 404);
+        }
+
+        if (!$this->canAccessOrder($request, $order)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Anda tidak berhak membayar pesanan ini',
+            ], 403);
         }
 
         $payment = Payment::where('order_id', $order->_id)->orderBy('created_at', 'desc')->first();

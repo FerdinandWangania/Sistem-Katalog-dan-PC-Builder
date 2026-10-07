@@ -19,6 +19,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('admin123!'),
             'phone'    => '081200000001',
             'role'     => 'admin',
+            'email_verified_at' => now(),
         ]);
 
         // Customers
@@ -36,6 +37,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'phone'    => $cust['phone'],
                 'role'     => 'customer',
+                'email_verified_at' => now(),
             ]);
         }
 

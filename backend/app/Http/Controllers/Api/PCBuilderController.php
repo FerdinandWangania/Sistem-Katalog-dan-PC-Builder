@@ -71,6 +71,17 @@ class PCBuilderController extends Controller
             ], 422);
         }
 
+        // Cek stok semua komponen sebelum masuk keranjang
+        foreach ($analysis['resolved_products'] as $product) {
+            if ($product->stock < 1) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => "Stok {$product->name} habis.",
+                    'errors'  => ["Stok {$product->name} habis."],
+                ], 422);
+            }
+        }
+
         // Tentukan cart
         $userId = $request->input('user_id');
         $sessionId = $request->input('session_id', 'guest-demo-session');
@@ -123,14 +134,43 @@ class PCBuilderController extends Controller
         $resolvedProducts = [];
         $totalPrice = 0.0;
 
-        // 1. Ambil produk yang dipilih
-        $cpu   = !empty($input['cpu_id']) ? Product::find($input['cpu_id']) : null;
-        $mobo  = !empty($input['motherboard_id']) ? Product::find($input['motherboard_id']) : null;
-        $ram   = !empty($input['ram_id']) ? Product::find($input['ram_id']) : null;
-        $ssd   = !empty($input['storage_id']) ? Product::find($input['storage_id']) : null;
-        $gpu   = !empty($input['gpu_id']) ? Product::find($input['gpu_id']) : null;
-        $case  = !empty($input['case_id']) ? Product::find($input['case_id']) : null;
-        $psu   = !empty($input['psu_id']) ? Product::find($input['psu_id']) : null;
+        // 1. Ambil & validasi produk yang dipilih (wajib lengkap 7 komponen)
+        $requiredMap = [
+            'cpu_id'         => 'CPU',
+            'motherboard_id' => 'Motherboard',
+            'ram_id'         => 'RAM',
+            'storage_id'     => 'SSD',
+            'gpu_id'         => 'GPU',
+            'case_id'        => 'Case',
+            'psu_id'         => 'PSU',
+        ];
+
+        $found = [];
+        foreach ($requiredMap as $field => $expectedCategory) {
+            $id = $input[$field] ?? null;
+            if (empty($id)) {
+                $errors[] = "Komponen {$expectedCategory} belum dipilih ({$field}).";
+                continue;
+            }
+            $product = Product::find($id);
+            if (!$product) {
+                $errors[] = "Produk untuk {$expectedCategory} tidak ditemukan (ID: {$id}).";
+                continue;
+            }
+            if (strcasecmp((string) $product->category, $expectedCategory) !== 0) {
+                $errors[] = "Produk {$product->name} adalah kategori {$product->category}, bukan {$expectedCategory}.";
+                continue;
+            }
+            $found[$field] = $product;
+        }
+
+        $cpu   = $found['cpu_id'] ?? null;
+        $mobo  = $found['motherboard_id'] ?? null;
+        $ram   = $found['ram_id'] ?? null;
+        $ssd   = $found['storage_id'] ?? null;
+        $gpu   = $found['gpu_id'] ?? null;
+        $case  = $found['case_id'] ?? null;
+        $psu   = $found['psu_id'] ?? null;
 
         $componentList = array_filter([$cpu, $mobo, $ram, $ssd, $gpu, $case, $psu]);
         foreach ($componentList as $p) {
@@ -153,7 +193,7 @@ class PCBuilderController extends Controller
             $moboRamType = $mobo->specs['memory_type'] ?? ($mobo->specs['max_memory'] ?? '');
             $ramType = $ram->specs['type'] ?? '';
 
-            if ($ramType && $moboRamType && !stripos($moboRamType, $ramType)) {
+            if ($ramType && $moboRamType && stripos($moboRamType, $ramType) === false) {
                 $errors[] = "Tipe RAM tidak kompatibel! Motherboard {$mobo->name} membutuhkan memori {$moboRamType}, tetapi RAM yang dipilih adalah {$ramType}.";
             }
         }
@@ -183,8 +223,11 @@ class PCBuilderController extends Controller
         }
 
         // 6. Rule: Wattage Calculation & 20% Safety Margin (Headroom 1.2x)
-        $cpuTdp = (int) filter_var($cpu->specs['tdp'] ?? '65', FILTER_SANITIZE_NUMBER_INT);
-        $gpuTdp = (int) filter_var($gpu->specs['tdp'] ?? '0', FILTER_SANITIZE_NUMBER_INT);
+        $cpuSpecs = $cpu?->specs ?? [];
+        $gpuSpecs = $gpu?->specs ?? [];
+        $psuSpecs = $psu?->specs ?? [];
+        $cpuTdp = (int) filter_var($cpuSpecs['tdp'] ?? '65', FILTER_SANITIZE_NUMBER_INT);
+        $gpuTdp = (int) filter_var($gpuSpecs['tdp'] ?? '0', FILTER_SANITIZE_NUMBER_INT);
         $ramWatt = $ram ? 15 : 0;
         $storageWatt = $ssd ? 10 : 0;
         $baseLoad = 60; // Motherboard, fans, USB, and controllers
@@ -196,7 +239,7 @@ class PCBuilderController extends Controller
         $isPsuSufficient = true;
 
         if ($psu) {
-            $selectedPsuWatt = (int) filter_var($psu->specs['wattage'] ?? '500', FILTER_SANITIZE_NUMBER_INT);
+            $selectedPsuWatt = (int) filter_var($psuSpecs['wattage'] ?? '500', FILTER_SANITIZE_NUMBER_INT);
             if ($selectedPsuWatt < $recommendedMinPsuWatt) {
                 $isPsuSufficient = false;
                 $warnings[] = "Peringatan Daya! Total konsumsi daya sistem adalah {$totalEstimatedWatt}W. Dengan margin keamanan 20%, disarankan PSU minimal {$recommendedMinPsuWatt}W, sedangkan PSU yang dipilih hanya {$selectedPsuWatt}W.";

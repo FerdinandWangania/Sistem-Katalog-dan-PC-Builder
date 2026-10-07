@@ -50,4 +50,48 @@ class UserController extends Controller
             'data'   => $user,
         ]);
     }
+
+    /**
+     * Ubah role user (admin only).
+     * PATCH /api/users/{id}/role  Body: { "role": "admin" | "customer" }
+     */
+    public function setRole(Request $request, string $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'role' => 'required|string|in:admin,customer',
+        ]);
+
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'User tidak ditemukan',
+            ], 404);
+        }
+
+        // Tidak boleh cabut admin diri sendiri
+        if ((string) $request->user()->_id === (string) $user->_id && $validated['role'] !== 'admin') {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Tidak bisa mencabut admin diri sendiri',
+            ], 422);
+        }
+
+        // Jaga minimal 1 admin tersisa
+        if ($user->isAdmin() && $validated['role'] !== 'admin'
+            && User::where('role', 'admin')->count() <= 1) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Minimal harus ada 1 admin',
+            ], 422);
+        }
+
+        $user->update(['role' => $validated['role']]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => "Role {$user->email} diubah menjadi {$validated['role']}",
+            'data'    => $user->fresh(),
+        ]);
+    }
 }

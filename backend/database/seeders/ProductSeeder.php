@@ -20,6 +20,7 @@ class ProductSeeder extends Seeder
                 'price'    => 7500000,
                 'discount_price' => 7000000,
                 'stock'    => 20,
+                'image'    => 'https://placehold.co/600x400?text=i9-14900K',
                 'specs'    => [
                     'cores'          => 24,
                     'threads'        => 32,
@@ -36,6 +37,7 @@ class ProductSeeder extends Seeder
                 'price'    => 8200000,
                 'discount_price' => 0,
                 'stock'    => 15,
+                'image'    => 'https://placehold.co/600x400?text=Ryzen-9-7950X',
                 'specs'    => [
                     'cores'          => 16,
                     'threads'        => 32,
@@ -53,6 +55,7 @@ class ProductSeeder extends Seeder
                 'price'    => 25000000,
                 'discount_price' => 23500000,
                 'stock'    => 8,
+                'image'    => 'https://placehold.co/600x400?text=RTX-4090',
                 'specs'    => [
                     'vram'        => '24GB GDDR6X',
                     'cuda_cores'  => 16384,
@@ -67,6 +70,7 @@ class ProductSeeder extends Seeder
                 'price'    => 14500000,
                 'discount_price' => 0,
                 'stock'    => 12,
+                'image'    => 'https://placehold.co/600x400?text=RX-7900-XTX',
                 'specs'    => [
                     'vram'       => '24GB GDDR6',
                     'stream_processors' => 6144,
@@ -82,6 +86,7 @@ class ProductSeeder extends Seeder
                 'price'    => 1800000,
                 'discount_price' => 1650000,
                 'stock'    => 50,
+                'image'    => 'https://placehold.co/600x400?text=Vengeance-32GB',
                 'specs'    => [
                     'capacity'  => '32GB (2x16GB)',
                     'type'      => 'DDR5',
@@ -96,6 +101,7 @@ class ProductSeeder extends Seeder
                 'price'    => 3500000,
                 'discount_price' => 0,
                 'stock'    => 25,
+                'image'    => 'https://placehold.co/600x400?text=Trident-Z5-64GB',
                 'specs'    => [
                     'capacity'  => '64GB (2x32GB)',
                     'type'      => 'DDR5',
@@ -111,6 +117,7 @@ class ProductSeeder extends Seeder
                 'price'    => 2200000,
                 'discount_price' => 2000000,
                 'stock'    => 40,
+                'image'    => 'https://placehold.co/600x400?text=990-Pro-2TB',
                 'specs'    => [
                     'capacity'        => '2TB',
                     'interface'       => 'PCIe 4.0 NVMe M.2',
@@ -127,6 +134,7 @@ class ProductSeeder extends Seeder
                 'price'    => 6800000,
                 'discount_price' => 0,
                 'stock'    => 10,
+                'image'    => 'https://placehold.co/600x400?text=Maximus-Z790',
                 'specs'    => [
                     'socket'       => 'LGA1700',
                     'chipset'      => 'Z790',
@@ -143,6 +151,7 @@ class ProductSeeder extends Seeder
                 'price'    => 4500000,
                 'discount_price' => 4200000,
                 'stock'    => 15,
+                'image'    => 'https://placehold.co/600x400?text=Strix-B650E',
                 'specs'    => [
                     'socket'       => 'AM5',
                     'chipset'      => 'B650E',
@@ -160,6 +169,7 @@ class ProductSeeder extends Seeder
                 'price'    => 2500000,
                 'discount_price' => 2300000,
                 'stock'    => 30,
+                'image'    => 'https://placehold.co/600x400?text=Seasonic-1000W',
                 'specs'    => [
                     'wattage'      => '1000W',
                     'efficiency'   => '80+ Gold',
@@ -174,6 +184,7 @@ class ProductSeeder extends Seeder
                 'price'    => 1750000,
                 'discount_price' => 0,
                 'stock'    => 25,
+                'image'    => 'https://placehold.co/600x400?text=RM750e',
                 'specs'    => [
                     'wattage'      => '750W',
                     'efficiency'   => '80+ Gold',
@@ -189,6 +200,7 @@ class ProductSeeder extends Seeder
                 'price'    => 2100000,
                 'discount_price' => 0,
                 'stock'    => 18,
+                'image'    => 'https://placehold.co/600x400?text=O11-Dynamic-EVO',
                 'specs'    => [
                     'form_factor'      => 'ATX',
                     'max_gpu'          => '422mm',
@@ -203,6 +215,7 @@ class ProductSeeder extends Seeder
                 'price'    => 1450000,
                 'discount_price' => 1350000,
                 'stock'    => 20,
+                'image'    => 'https://placehold.co/600x400?text=H5-Flow',
                 'specs'    => [
                     'form_factor'      => 'ATX',
                     'max_gpu'          => '365mm',

@@ -13,7 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'auth.token' => \App\Http\Middleware\TokenAuth::class,
+            'admin'      => \App\Http\Middleware\AdminOnly::class,
+            'owner'      => \App\Http\Middleware\EnsureOwner::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
