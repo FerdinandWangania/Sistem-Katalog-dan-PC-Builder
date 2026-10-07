@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ResetPasswordMail;
+use App\Mail\VerifyEmailMail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 /**
@@ -45,10 +48,10 @@ class AuthController extends Controller
             'role'     => 'customer', // role dikunci, tidak bisa daftar jadi admin
         ]);
 
-        // Token verifikasi email (dikirim via email di produksi; saat ini via log + debug response)
+        // Token verifikasi email (dikirim via email; fallback ke log bila SMTP gagal)
         $verifyPlain = Str::random(40);
         $user->update(['verify_token' => hash('sha256', $verifyPlain)]);
-        Log::info('Verify email token untuk ' . $user->email . ': ' . $verifyPlain);
+        $this->sendMail($user->email, new VerifyEmailMail($verifyPlain, $user->name));
 
         $plainToken = $this->issueToken($user);
 
@@ -194,6 +197,18 @@ class AuthController extends Controller
     }
 
     /**
+     * Kirim email; gagal SMTP tidak menggagalkan request (token tetap di log).
+     */
+    private function sendMail(string $to, \Illuminate\Mail\Mailable $mail): void
+    {
+        try {
+            Mail::to($to)->send($mail);
+        } catch (\Exception $e) {
+            Log::warning('Kirim email gagal ke ' . $to . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Terbitkan token baru (rotate: token lama otomatis hangus).
      * Berlaku 30 hari.
      */
@@ -224,7 +239,7 @@ class AuthController extends Controller
                 'reset_token'      => hash('sha256', $plain),
                 'reset_expires_at' => now()->addHour(),
             ]);
-            Log::info('Reset password token untuk ' . $user->email . ': ' . $plain);
+            $this->sendMail($user->email, new ResetPasswordMail($plain, $user->name));
         }
 
         $data = [];
@@ -326,7 +341,7 @@ class AuthController extends Controller
 
         $plain = Str::random(40);
         $user->update(['verify_token' => hash('sha256', $plain)]);
-        Log::info('Verify email token untuk ' . $user->email . ': ' . $plain);
+        $this->sendMail($user->email, new VerifyEmailMail($plain, $user->name));
 
         $data = [];
         if (config('app.debug')) {
