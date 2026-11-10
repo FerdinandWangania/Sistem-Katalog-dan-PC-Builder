@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Pastikan user login bertipe admin. Dipakai setelah TokenAuth.
+ * Pastikan user login bertipe admin (termasuk superadmin).
+ * Dipakai setelah TokenAuth.
  */
 class AdminOnly
 {
@@ -15,9 +16,9 @@ class AdminOnly
     {
         $user = $request->user();
 
-        if (!$user || !$user->isAdmin()) {
+        if (! $user || ! $user->isAdmin()) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Akses khusus admin',
             ], 403);
         }

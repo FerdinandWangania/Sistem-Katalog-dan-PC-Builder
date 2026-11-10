@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\FinanceController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PCBuilderController;
 use App\Http\Controllers\Api\PrebuiltPackageController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PromotionController;
@@ -16,17 +18,17 @@ use Illuminate\Support\Facades\Route;
  */
 Route::get('/', function () {
     return response()->json([
-        'status'    => 'success',
-        'app'       => 'PC Store E-Commerce API (MongoDB NoSQL)',
-        'version'   => '1.0.0',
+        'status' => 'success',
+        'app' => 'PC Store E-Commerce API (MongoDB NoSQL)',
+        'version' => '1.0.0',
         'endpoints' => [
-            'products'   => '/api/products',
-            'packages'   => '/api/packages',
+            'products' => '/api/products',
+            'packages' => '/api/packages',
             'promotions' => '/api/promotions',
-            'users'      => '/api/users',
-            'cart'       => '/api/cart',
-            'orders'     => '/api/orders',
-            'payments'   => '/api/payments',
+            'users' => '/api/users',
+            'cart' => '/api/cart',
+            'orders' => '/api/orders',
+            'payments' => '/api/payments',
         ],
     ]);
 });
@@ -42,10 +44,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth.toke
 Route::get('/me', [AuthController::class, 'me'])->middleware('auth.token');
 Route::post('/resend-verification', [AuthController::class, 'resendVerification'])->middleware('auth.token');
 
-// Users (admin only)
-Route::get('/users', [UserController::class, 'index'])->middleware(['auth.token', 'admin']);
-Route::get('/users/{id}', [UserController::class, 'show'])->middleware(['auth.token', 'admin']);
-Route::patch('/users/{id}/role', [UserController::class, 'setRole'])->middleware(['auth.token', 'admin']);
+// Users (baca: admin/superadmin/keuangan; Manajemen Akun: superadmin)
+Route::get('/users', [UserController::class, 'index'])->middleware(['auth.token', 'admin.read']);
+Route::get('/users/{id}', [UserController::class, 'show'])->middleware(['auth.token', 'admin.read']);
+Route::patch('/users/{id}/role', [UserController::class, 'setRole'])->middleware(['auth.token', 'superadmin']);
+Route::post('/admin/users', [UserController::class, 'store'])->middleware(['auth.token', 'superadmin']);
+Route::put('/admin/users/{id}', [UserController::class, 'update'])->middleware(['auth.token', 'superadmin']);
+Route::delete('/admin/users/{id}', [UserController::class, 'destroy'])->middleware(['auth.token', 'superadmin']);
 
 // Products (baca publik, tulis admin only)
 Route::get('/products', [ProductController::class, 'index']);
@@ -68,8 +73,13 @@ Route::post('/promotions', [PromotionController::class, 'store'])->middleware(['
 Route::put('/promotions/{id}', [PromotionController::class, 'update'])->middleware(['auth.token', 'admin']);
 Route::delete('/promotions/{id}', [PromotionController::class, 'destroy'])->middleware(['auth.token', 'admin']);
 
-// Admin dashboard stats
-Route::get('/admin/stats', [StatsController::class, 'index'])->middleware(['auth.token', 'admin']);
+// Admin dashboard stats (baca operasional: admin/superadmin/keuangan)
+Route::get('/admin/stats', [StatsController::class, 'index'])->middleware(['auth.token', 'admin.read']);
+
+// Laporan keuangan (keuangan/superadmin)
+Route::get('/admin/finance/profit-loss', [FinanceController::class, 'profitLoss'])->middleware(['auth.token', 'finance']);
+Route::get('/admin/finance/tax', [FinanceController::class, 'tax'])->middleware(['auth.token', 'finance']);
+Route::get('/admin/finance/margin', [FinanceController::class, 'margin'])->middleware(['auth.token', 'finance']);
 
 // Shopping Cart (user_id wajib milik token; guest pakai session_id)
 Route::get('/cart', [CartController::class, 'show'])->middleware('owner');
@@ -84,9 +94,10 @@ Route::post('/orders/checkout', [OrderController::class, 'checkout'])->middlewar
 Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
 Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware(['auth.token', 'admin']);
 
-// PC Builder Engine (Auto-matching, Compatibility & Wattage)
-Route::post('/builder/validate', [\App\Http\Controllers\Api\PCBuilderController::class, 'validateBuild']);
-Route::post('/builder/add-to-cart', [\App\Http\Controllers\Api\PCBuilderController::class, 'addBuildToCart'])->middleware('owner');
+// PC Builder Engine (auto-matching, kompatibilitas & wattage)
+Route::post('/builder/validate', [PCBuilderController::class, 'validateBuild']);
+Route::post('/builder/add-to-cart', [PCBuilderController::class, 'addBuildToCart'])->middleware('owner');
+Route::put('/builder/builds/{buildId}', [PCBuilderController::class, 'replaceBuild'])->middleware('owner');
 
 // Payment Gateway Simulation
 Route::post('/payments/{orderId}/pay', [PaymentController::class, 'pay']);

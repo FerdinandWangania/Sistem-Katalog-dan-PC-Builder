@@ -25,14 +25,15 @@ class StatsController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data'   => [
+            'data' => [
                 'users' => [
-                    'total'    => User::count(),
-                    'admin'    => User::where('role', 'admin')->count(),
+                    'total' => User::count(),
+                    'admin' => User::whereIn('role', ['admin', 'superadmin'])->count(),
                     'customer' => User::where('role', 'customer')->count(),
+                    'keuangan' => User::where('role', 'keuangan')->count(),
                 ],
                 'products' => [
-                    'total'     => Product::count(),
+                    'total' => Product::count(),
                     'low_stock' => Product::where('stock', '<', 5)->get(['_id', 'name', 'stock'])->values(),
                 ],
                 'orders' => array_merge(

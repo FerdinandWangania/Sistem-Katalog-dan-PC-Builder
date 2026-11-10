@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\Concerns\OrderAccess;
+use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\User;
+use App\Services\CompatibilityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use MongoDB\BSON\ObjectId;
@@ -17,6 +19,9 @@ use MongoDB\BSON\ObjectId;
 class OrderController extends Controller
 {
     use OrderAccess;
+
+    public function __construct(private CompatibilityService $compatibility) {}
+
     /**
      * Checkout keranjang belanja menjadi Pesanan.
      * Mendukung user terdaftar (user_id) maupun guest (session_id).
@@ -31,10 +36,10 @@ class OrderController extends Controller
     public function checkout(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'user_id'          => 'nullable|string',
-            'session_id'       => 'nullable|string',
+            'user_id' => 'nullable|string',
+            'session_id' => 'nullable|string',
             'shipping_address' => 'required|string',
-            'shipping_fee'     => 'nullable|numeric|min:0',
+            'shipping_fee' => 'nullable|numeric|min:0',
             'gateway_provider' => 'nullable|string|in:midtrans,xendit,bca_va,mandiri_va',
         ]);
 
@@ -44,25 +49,25 @@ class OrderController extends Controller
         $user = null;
         if ($userId) {
             $user = User::find($userId);
-            if (!$user) {
+            if (! $user) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'User tidak ditemukan',
                 ], 404);
             }
         }
 
-        if (!$userId && !$sessionId) {
+        if (! $userId && ! $sessionId) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'user_id atau session_id wajib diisi',
             ], 422);
         }
 
         // User terdaftar wajib verifikasi email dulu (guest bebas)
-        if ($user && !$user->email_verified_at) {
+        if ($user && ! $user->email_verified_at) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Verifikasi email dulu sebelum checkout (POST /api/resend-verification untuk token baru)',
             ], 403);
         }
@@ -75,9 +80,9 @@ class OrderController extends Controller
         $cart = $userId
             ? Cart::where('user_id', $userId)->first()
             : Cart::where('session_id', $sessionId)->first();
-        if (!$cart) {
+        if (! $cart) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Keranjang belanja kosong',
             ], 400);
         }
@@ -85,23 +90,25 @@ class OrderController extends Controller
         $cartItems = CartItem::where('cart_id', $cart->_id)->get();
         if ($cartItems->isEmpty()) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Tidak ada item dalam keranjang untuk dicheckout',
             ], 400);
         }
 
         // Revalidasi harga & stok dari data produk terkini (snapshot cart bisa basi)
+        $productMap = [];
+
         foreach ($cartItems as $item) {
-            $product = \App\Models\Product::find($item->product_id);
-            if (!$product) {
+            $product = Product::find($item->product_id);
+            if (! $product) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Terdapat produk yang sudah tidak tersedia, silakan perbarui keranjang',
                 ], 422);
             }
             if ($product->stock < $item->qty) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => "Stok {$product->name} tidak mencukupi (tersedia: {$product->stock}, diminta: {$item->qty}).",
                 ], 422);
             }
@@ -109,6 +116,33 @@ class OrderController extends Controller
                 $item->price_snapshot = $product->effective_price;
                 $item->save();
             }
+
+            $productMap[(string) $item->_id] = $product;
+        }
+
+        // Revalidasi kompatibilitas setiap rakitan (per build_id) sebelum order dibuat.
+        $buildFailures = [];
+
+        foreach ($cartItems->where('source_type', 'builder')->whereNotNull('build_id')->groupBy('build_id') as $buildId => $buildItems) {
+            $analysis = $this->compatibility->analyzeCartItems($buildItems, [
+                'build_name' => $buildItems->first()?->build_name,
+            ]);
+
+            if (! $analysis['is_compatible']) {
+                $buildFailures[] = [
+                    'build_id' => $buildId,
+                    'build_name' => $analysis['build_name'],
+                    'errors' => $analysis['errors'],
+                ];
+            }
+        }
+
+        if ($buildFailures !== []) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Rakitan pada keranjang tidak lagi kompatibel. Perbaiki rakitan sebelum checkout.',
+                'builds' => $buildFailures,
+            ], 422);
         }
 
         $shippingFee = (float) ($validated['shipping_fee'] ?? 25000);
@@ -117,42 +151,47 @@ class OrderController extends Controller
 
         // 1. Buat Order (nomor unik dengan retry)
         $order = Order::create([
-            'user_id'          => $user?->_id,
-            'session_id'       => $user ? null : $sessionId,
-            'order_number'     => $this->generateOrderNumber(),
-            'subtotal'         => $subtotal,
-            'shipping_fee'     => $shippingFee,
-            'total_amount'     => $totalAmount,
-            'status'           => 'pending',
+            'user_id' => $user?->_id,
+            'session_id' => $user ? null : $sessionId,
+            'order_number' => $this->generateOrderNumber(),
+            'subtotal' => $subtotal,
+            'shipping_fee' => $shippingFee,
+            'total_amount' => $totalAmount,
+            'status' => 'pending',
             'shipping_address' => $validated['shipping_address'],
         ]);
 
         // 2. Transfer CartItems ke OrderItems (Snapshot)
         foreach ($cartItems as $item) {
+            $product = $productMap[(string) $item->_id] ?? null;
+
             OrderItem::create([
-                'order_id'       => $order->_id,
-                'product_id'     => $item->product_id,
-                'source_type'    => $item->source_type,
-                'build_id'       => $item->build_id,
-                'qty'            => $item->qty,
+                'order_id' => $order->_id,
+                'product_id' => $item->product_id,
+                'source_type' => $item->source_type,
+                'build_id' => $item->build_id,
+                'build_name' => $item->build_name,
+                'qty' => $item->qty,
                 'price_snapshot' => $item->price_snapshot,
+                'hpp_snapshot' => $product?->hpp,
+                'price_list_snapshot' => $product ? (float) $product->price : null,
             ]);
         }
 
         // 3. Kurangi stok produk
         foreach ($cartItems as $item) {
-            \App\Models\Product::where('_id', $item->product_id)->decrement('stock', $item->qty);
+            Product::where('_id', $item->product_id)->decrement('stock', $item->qty);
         }
 
         // 4. Buat Payment pending
         $gatewayProvider = $validated['gateway_provider'] ?? 'midtrans';
         $payment = Payment::create([
-            'order_id'               => $order->_id,
-            'gateway_provider'       => $gatewayProvider,
-            'gateway_transaction_id' => 'TRX-' . strtoupper((string) new ObjectId()),
-            'status'                 => 'pending',
-            'amount'                 => $totalAmount,
-            'paid_at'                => null,
+            'order_id' => $order->_id,
+            'gateway_provider' => $gatewayProvider,
+            'gateway_transaction_id' => 'TRX-'.strtoupper((string) new ObjectId),
+            'status' => 'pending',
+            'amount' => $totalAmount,
+            'paid_at' => null,
         ]);
 
         // 5. Kosongkan keranjang
@@ -164,10 +203,10 @@ class OrderController extends Controller
         $order->load(['items.product', 'payments']);
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Checkout berhasil! Pesanan dibuat.',
-            'data'    => [
-                'order'   => $order,
+            'data' => [
+                'order' => $order,
                 'payment' => $payment,
             ],
         ], 201);
@@ -185,16 +224,16 @@ class OrderController extends Controller
         ]);
 
         $order = Order::find($id);
-        if (!$order) {
+        if (! $order) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Pesanan tidak ditemukan',
             ], 404);
         }
 
         if (in_array($order->status, ['delivered', 'cancelled'], true)) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => "Pesanan {$order->status} tidak dapat diubah lagi",
             ], 422);
         }
@@ -210,9 +249,9 @@ class OrderController extends Controller
         $order->load(['items.product', 'payments']);
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => "Status pesanan diubah menjadi {$validated['status']}",
-            'data'    => $order,
+            'data' => $order,
         ]);
     }
 
@@ -222,7 +261,7 @@ class OrderController extends Controller
     private function mergeGuestCart(string $userId, string $sessionId): void
     {
         $guestCart = Cart::where('session_id', $sessionId)->first();
-        if (!$guestCart) {
+        if (! $guestCart) {
             return;
         }
 
@@ -260,13 +299,13 @@ class OrderController extends Controller
     private function generateOrderNumber(): string
     {
         for ($i = 0; $i < 10; $i++) {
-            $number = 'ORD-' . now()->format('Ymd') . '-' . rand(1000, 9999);
-            if (!Order::where('order_number', $number)->exists()) {
+            $number = 'ORD-'.now()->format('Ymd').'-'.rand(1000, 9999);
+            if (! Order::where('order_number', $number)->exists()) {
                 return $number;
             }
         }
 
-        return 'ORD-' . now()->format('YmdHis') . '-' . strtoupper(substr((string) new ObjectId(), -6));
+        return 'ORD-'.now()->format('YmdHis').'-'.strtoupper(substr((string) new ObjectId, -6));
     }
 
     /**
@@ -280,7 +319,7 @@ class OrderController extends Controller
 
         $query = Order::with(['items.product', 'payments']);
 
-        if ($user && $user->isAdmin()) {
+        if ($user && $user->canReadOperational()) {
             if ($request->filled('user_id')) {
                 $query->where('user_id', $request->query('user_id'));
             }
@@ -296,7 +335,7 @@ class OrderController extends Controller
             $query->where('session_id', $sessionId);
         } else {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Wajib login atau sertakan session_id',
             ], 401);
         }
@@ -305,8 +344,8 @@ class OrderController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'count'  => $orders->count(),
-            'data'   => $orders,
+            'count' => $orders->count(),
+            'data' => $orders,
         ]);
     }
 
@@ -318,23 +357,26 @@ class OrderController extends Controller
     {
         $order = Order::with(['items.product', 'payments', 'user'])->find($id);
 
-        if (!$order) {
+        if (! $order) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Pesanan tidak ditemukan',
             ], 404);
         }
 
-        if (!$this->canAccessOrder($request, $order)) {
+        [$reader] = $this->accessIdentity($request);
+
+        if (! $this->canAccessOrder($request, $order)
+            && ! ($reader && $reader->canReadOperational())) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Anda tidak berhak melihat pesanan ini',
             ], 403);
         }
 
         return response()->json([
             'status' => 'success',
-            'data'   => $order,
+            'data' => $order,
         ]);
     }
 
@@ -347,23 +389,23 @@ class OrderController extends Controller
     {
         $order = Order::find($id);
 
-        if (!$order) {
+        if (! $order) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Pesanan tidak ditemukan',
             ], 404);
         }
 
-        if (!$this->canAccessOrder($request, $order)) {
+        if (! $this->canAccessOrder($request, $order)) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Anda tidak berhak membatalkan pesanan ini',
             ], 403);
         }
 
         if ($order->status !== 'pending') {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => "Pesanan {$order->status} tidak bisa dibatalkan sendiri, hubungi admin",
             ], 422);
         }
@@ -373,9 +415,9 @@ class OrderController extends Controller
         $order->load(['items.product', 'payments']);
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Pesanan dibatalkan, stok dikembalikan',
-            'data'    => $order,
+            'data' => $order,
         ]);
     }
 
@@ -385,7 +427,7 @@ class OrderController extends Controller
     private function restoreStock(Order $order): void
     {
         foreach ($order->items as $item) {
-            \App\Models\Product::where('_id', $item->product_id)->increment('stock', $item->qty);
+            Product::where('_id', $item->product_id)->increment('stock', $item->qty);
         }
     }
 }

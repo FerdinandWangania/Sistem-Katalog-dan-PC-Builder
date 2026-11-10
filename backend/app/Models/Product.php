@@ -11,14 +11,15 @@ use MongoDB\Laravel\Eloquent\Model;
  * @property string $category
  * @property string $brand
  * @property string $name
- * @property float  $price
- * @property float  $discount_price
- * @property int    $stock
- * @property array  $specs  — embedded object (free-form spec sheet)
+ * @property float $price
+ * @property float $discount_price
+ * @property int $stock
+ * @property array $specs — embedded object (free-form spec sheet)
  */
 class Product extends Model
 {
     protected $connection = 'mongodb';
+
     protected $collection = 'products';
 
     protected $fillable = [
@@ -27,6 +28,7 @@ class Product extends Model
         'name',
         'price',
         'discount_price',
+        'hpp',
         'stock',
         'image',
         'specs',
@@ -35,10 +37,11 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'price'          => 'float',
+            'price' => 'float',
             'discount_price' => 'float',
-            'stock'          => 'integer',
-            'specs'          => 'array',
+            'hpp' => 'float',
+            'stock' => 'integer',
+            'specs' => 'array',
         ];
     }
 

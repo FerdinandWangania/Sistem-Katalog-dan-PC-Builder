@@ -12,13 +12,33 @@ class UserSeeder extends Seeder
     {
         User::truncate();
 
-        // Admin
+        // Superadmin pertama (PRD §4: dibuat lewat seeder)
         User::create([
-            'name'     => 'Super Admin',
-            'email'    => 'admin@pcstore.id',
+            'name' => 'Super Admin',
+            'email' => 'superadmin@pcstore.id',
+            'password' => Hash::make('super123!'),
+            'phone' => '081200000000',
+            'role' => 'superadmin',
+            'email_verified_at' => now(),
+        ]);
+
+        // Admin operasional
+        User::create([
+            'name' => 'Admin Operasional',
+            'email' => 'admin@pcstore.id',
             'password' => Hash::make('admin123!'),
-            'phone'    => '081200000001',
-            'role'     => 'admin',
+            'phone' => '081200000001',
+            'role' => 'admin',
+            'email_verified_at' => now(),
+        ]);
+
+        // Keuangan (baca operasional + laporan keuangan)
+        User::create([
+            'name' => 'Staff Keuangan',
+            'email' => 'keuangan@pcstore.id',
+            'password' => Hash::make('keuangan123!'),
+            'phone' => '081200000006',
+            'role' => 'keuangan',
             'email_verified_at' => now(),
         ]);
 
@@ -32,15 +52,15 @@ class UserSeeder extends Seeder
 
         foreach ($customers as $cust) {
             User::create([
-                'name'     => $cust['name'],
-                'email'    => $cust['email'],
+                'name' => $cust['name'],
+                'email' => $cust['email'],
                 'password' => Hash::make('password123'),
-                'phone'    => $cust['phone'],
-                'role'     => 'customer',
+                'phone' => $cust['phone'],
+                'role' => 'customer',
                 'email_verified_at' => now(),
             ]);
         }
 
-        $this->command->info('✓ 1 admin + ' . count($customers) . ' customer berhasil di-seed.');
+        $this->command->info('✔ 1 superadmin + 1 admin + 1 keuangan + '.count($customers).' customer berhasil di-seed.');
     }
 }

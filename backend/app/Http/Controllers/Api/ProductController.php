@@ -34,7 +34,7 @@ class ProductController extends Controller
             $ramType = $request->query('ram_type');
             $query->where(function ($q) use ($ramType) {
                 $q->where('specs.type', $ramType)
-                  ->orWhere('specs.memory_type', $ramType);
+                    ->orWhere('specs.memory_type', $ramType);
             });
         }
 
@@ -45,15 +45,15 @@ class ProductController extends Controller
         if ($request->filled('min_watt')) {
             $minWatt = (int) $request->query('min_watt');
             $query->where('specs.wattage', 'regex', '/^([0-9]+)/')
-                  ->where(function ($q) use ($minWatt) {
-                      // Ambil produk PSU
-                      $q->where('category', 'PSU');
-                  });
+                ->where(function ($q) {
+                    // Ambil produk PSU
+                    $q->where('category', 'PSU');
+                });
         }
 
         if ($request->filled('q')) {
             $search = $request->query('q');
-            $query->where('name', 'regex', '/' . preg_quote($search, '/') . '/i');
+            $query->where('name', 'regex', '/'.preg_quote($search, '/').'/i');
         }
 
         if ($request->query('sort') === 'price_asc') {
@@ -65,9 +65,9 @@ class ProductController extends Controller
         $products = $query->get();
 
         return response()->json([
-            'status'  => 'success',
-            'count'   => $products->count(),
-            'data'    => $products,
+            'status' => 'success',
+            'count' => $products->count(),
+            'data' => $products,
         ]);
     }
 
@@ -79,16 +79,16 @@ class ProductController extends Controller
     {
         $product = Product::find($id);
 
-        if (!$product) {
+        if (! $product) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Produk tidak ditemukan',
             ], 404);
         }
 
         return response()->json([
             'status' => 'success',
-            'data'   => $product,
+            'data' => $product,
         ]);
     }
 
@@ -99,22 +99,23 @@ class ProductController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'category'       => 'required|string',
-            'brand'          => 'required|string',
-            'name'           => 'required|string',
-            'price'          => 'required|numeric|min:0',
+            'category' => 'required|string',
+            'brand' => 'required|string',
+            'name' => 'required|string',
+            'price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0',
-            'stock'          => 'required|integer|min:0',
-            'image'          => 'nullable|string|max:2048',
-            'specs'          => 'nullable|array',
+            'hpp' => 'nullable|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'image' => 'nullable|string|max:2048',
+            'specs' => 'nullable|array',
         ]);
 
         $product = Product::create($validated);
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Produk berhasil ditambahkan',
-            'data'    => $product,
+            'data' => $product,
         ], 201);
     }
 
@@ -126,30 +127,31 @@ class ProductController extends Controller
     {
         $product = Product::find($id);
 
-        if (!$product) {
+        if (! $product) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Produk tidak ditemukan',
             ], 404);
         }
 
         $validated = $request->validate([
-            'category'       => 'sometimes|string',
-            'brand'          => 'sometimes|string',
-            'name'           => 'sometimes|string',
-            'price'          => 'sometimes|numeric|min:0',
+            'category' => 'sometimes|string',
+            'brand' => 'sometimes|string',
+            'name' => 'sometimes|string',
+            'price' => 'sometimes|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0',
-            'stock'          => 'sometimes|integer|min:0',
-            'image'          => 'nullable|string|max:2048',
-            'specs'          => 'nullable|array',
+            'hpp' => 'nullable|numeric|min:0',
+            'stock' => 'sometimes|integer|min:0',
+            'image' => 'nullable|string|max:2048',
+            'specs' => 'nullable|array',
         ]);
 
         $product->update($validated);
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Produk berhasil diperbarui',
-            'data'    => $product,
+            'data' => $product,
         ]);
     }
 
@@ -161,9 +163,9 @@ class ProductController extends Controller
     {
         $product = Product::find($id);
 
-        if (!$product) {
+        if (! $product) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Produk tidak ditemukan',
             ], 404);
         }
@@ -171,7 +173,7 @@ class ProductController extends Controller
         $product->delete();
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Produk berhasil dihapus',
         ]);
     }

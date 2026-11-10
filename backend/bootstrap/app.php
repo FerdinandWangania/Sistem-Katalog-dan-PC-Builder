@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Middleware\AdminOnly;
+use App\Http\Middleware\EnsureOwner;
+use App\Http\Middleware\FinanceAccess;
+use App\Http\Middleware\OperationalRead;
+use App\Http\Middleware\SuperadminOnly;
+use App\Http\Middleware\TokenAuth;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,9 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'auth.token' => \App\Http\Middleware\TokenAuth::class,
-            'admin'      => \App\Http\Middleware\AdminOnly::class,
-            'owner'      => \App\Http\Middleware\EnsureOwner::class,
+            'auth.token' => TokenAuth::class,
+            'admin' => AdminOnly::class,
+            'owner' => EnsureOwner::class,
+            'superadmin' => SuperadminOnly::class,
+            'finance' => FinanceAccess::class,
+            'admin.read' => OperationalRead::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

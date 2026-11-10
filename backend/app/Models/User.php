@@ -2,27 +2,32 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use MongoDB\Laravel\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use MongoDB\BSON\ObjectId;
+use MongoDB\Laravel\Eloquent\Model;
 
 /**
  * Model User � unified users collection (role: customer | admin)
  *
- * @property \MongoDB\BSON\ObjectId $_id
+ * @property ObjectId $_id
  * @property string $name
  * @property string $email
  * @property string $password
  * @property string|null $phone
- * @property string $role  � 'customer' | 'admin'
- * @property \Carbon\Carbon $created_at
+ * @property string $role � 'customer' | 'admin'
+ * @property Carbon $created_at
  */
 class User extends Model implements AuthenticatableContract
 {
     use Authenticatable, Notifiable;
 
+    public const ROLES = ['customer', 'admin', 'superadmin', 'keuangan'];
+
     protected $connection = 'mongodb';
+
     protected $collection = 'users';
 
     protected $fillable = [
@@ -31,6 +36,7 @@ class User extends Model implements AuthenticatableContract
         'password',
         'phone',
         'role',
+        'must_change_password',
         'google_id',
         'avatar',
         'api_token',
@@ -55,10 +61,11 @@ class User extends Model implements AuthenticatableContract
     {
         return [
             'email_verified_at' => 'datetime',
-            'token_expires_at'  => 'datetime',
-            'reset_expires_at'  => 'datetime',
-            'password'          => 'hashed',
-            'created_at'        => 'datetime',
+            'token_expires_at' => 'datetime',
+            'reset_expires_at' => 'datetime',
+            'password' => 'hashed',
+            'must_change_password' => 'boolean',
+            'created_at' => 'datetime',
         ];
     }
 
@@ -83,12 +90,30 @@ class User extends Model implements AuthenticatableContract
 
     public function scopeAdmins($query)
     {
-        return $query->where('role', 'admin');
+        return $query->whereIn('role', ['admin', 'superadmin']);
     }
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'superadmin'], true);
+    }
+
+    public function isSuperadmin(): bool
+    {
+        return $this->role === 'superadmin';
+    }
+
+    public function isFinance(): bool
+    {
+        return in_array($this->role, ['keuangan', 'superadmin'], true);
+    }
+
+    /**
+     * Boleh membaca data operasional (termasuk role keuangan read-only).
+     */
+    public function canReadOperational(): bool
+    {
+        return in_array($this->role, ['admin', 'superadmin', 'keuangan'], true);
     }
 
     public function isCustomer(): bool

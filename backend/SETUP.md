@@ -16,15 +16,23 @@ php artisan serve --port=8000        # API di http://127.0.0.1:8000/api
 ```
 
 ## Akun seed
-| Role     | Email             | Password    |
-|----------|-------------------|-------------|
-| admin    | admin@pcstore.id  | admin123!   |
-| customer | budi@mail.com     | password123 |
-| customer | siti@mail.com     | password123 |
+| Role       | Email                 | Password      |
+|------------|-----------------------|---------------|
+| superadmin | superadmin@pcstore.id | super123!     |
+| admin      | admin@pcstore.id      | admin123!     |
+| keuangan   | keuangan@pcstore.id   | keuangan123!  |
+| customer   | budi@mail.com         | password123   |
+| customer   | siti@mail.com         | password123   |
 
 ## Env penting (lihat `.env.example`)
 - `MONGODB_URI`, `MONGODB_DATABASE`
 - `GOOGLE_CLIENT_ID` — wajib diisi untuk `POST /api/login/google` (OAuth Web dari Google Cloud Console)
+- `PPN_RATE` — tarif PPN inklusif untuk laporan keuangan (default `11`)
+
+## Endpoint P1
+- Builder: `POST /api/builder/validate`, `POST /api/builder/add-to-cart`, `PUT /api/builder/builds/{build_id}`
+- Manajemen Akun (superadmin): `POST|PUT|DELETE /api/admin/users[/{id}]`, `PATCH /api/users/{id}/role`
+- Keuangan (keuangan/superadmin): `GET /api/admin/finance/profit-loss|tax|margin` (+ `&format=csv`)
 
 ## Alur API utama
 - Auth: `POST /api/register|login|logout|forgot-password|reset-password|verify-email|resend-verification`, `GET /api/me`

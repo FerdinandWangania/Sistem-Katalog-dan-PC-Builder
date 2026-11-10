@@ -7,17 +7,19 @@ use MongoDB\Laravel\Eloquent\Model;
 /**
  * CartItem — satu baris dalam keranjang belanja.
  *
- * @property string      $_id
- * @property string      $cart_id
- * @property string      $product_id
- * @property string      $source_type  -- "catalog" | "builder"
- * @property string|null $build_id     -- grup sesi rakitan PC Builder
- * @property int         $qty
- * @property float       $price_snapshot
+ * @property string $_id
+ * @property string $cart_id
+ * @property string $product_id
+ * @property string $source_type -- "catalog" | "builder"
+ * @property string|null $build_id -- grup sesi rakitan PC Builder
+ * @property string|null $build_name -- nama rakitan (max 60 karakter)
+ * @property int $qty
+ * @property float $price_snapshot
  */
 class CartItem extends Model
 {
     protected $connection = 'mongodb';
+
     protected $collection = 'cart_items';
 
     protected $fillable = [
@@ -25,6 +27,7 @@ class CartItem extends Model
         'product_id',
         'source_type',
         'build_id',
+        'build_name',
         'qty',
         'price_snapshot',
     ];
@@ -32,7 +35,7 @@ class CartItem extends Model
     protected function casts(): array
     {
         return [
-            'qty'            => 'integer',
+            'qty' => 'integer',
             'price_snapshot' => 'float',
         ];
     }

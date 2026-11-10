@@ -25,28 +25,30 @@ class CartController extends Controller
         $catalogItems = $cart->items->where('source_type', 'catalog')->values();
         $builderBuilds = $cart->items->where('source_type', 'builder')->groupBy('build_id')->map(function ($items, $buildId) {
             return [
-                'build_id'    => $buildId,
+                'build_id' => $buildId,
+                'build_name' => $items->first()?->build_name,
                 'total_price' => $items->sum(fn ($i) => $i->price_snapshot * $i->qty),
-                'components'  => $items->values(),
+                'components' => $items->values(),
             ];
         })->values();
         $packageBuilds = $cart->items->where('source_type', 'package')->groupBy('build_id')->map(function ($items, $buildId) {
             return [
-                'build_id'    => $buildId,
+                'build_id' => $buildId,
+                'build_name' => $items->first()?->build_name,
                 'total_price' => $items->sum(fn ($i) => $i->price_snapshot * $i->qty),
-                'components'  => $items->values(),
+                'components' => $items->values(),
             ];
         })->values();
 
         return response()->json([
             'status' => 'success',
-            'data'   => [
-                'cart_id'        => $cart->_id,
-                'user_id'        => $cart->user_id,
-                'session_id'     => $cart->session_id,
-                'total_price'    => $cart->total_price,
-                'item_count'     => $cart->items->sum('qty'),
-                'catalog_items'  => $catalogItems,
+            'data' => [
+                'cart_id' => $cart->_id,
+                'user_id' => $cart->user_id,
+                'session_id' => $cart->session_id,
+                'total_price' => $cart->total_price,
+                'item_count' => $cart->items->sum('qty'),
+                'catalog_items' => $catalogItems,
                 'builder_builds' => $builderBuilds,
                 'package_builds' => $packageBuilds,
             ],
@@ -67,18 +69,18 @@ class CartController extends Controller
     public function addItem(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'user_id'     => 'nullable|string',
-            'session_id'  => 'nullable|string',
-            'product_id'  => 'required|string',
-            'qty'         => 'nullable|integer|min:1',
+            'user_id' => 'nullable|string',
+            'session_id' => 'nullable|string',
+            'product_id' => 'required|string',
+            'qty' => 'nullable|integer|min:1',
             'source_type' => 'nullable|string|in:catalog,builder',
-            'build_id'    => 'nullable|string',
+            'build_id' => 'nullable|string',
         ]);
 
         $product = Product::find($validated['product_id']);
-        if (!$product) {
+        if (! $product) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Produk tidak ditemukan',
             ], 404);
         }
@@ -86,7 +88,7 @@ class CartController extends Controller
         $cart = $this->resolveCart($request);
         $qty = $validated['qty'] ?? 1;
         $sourceType = $validated['source_type'] ?? 'catalog';
-        $buildId = $validated['build_id'] ?? ($sourceType === 'builder' ? (string) new ObjectId() : null);
+        $buildId = $validated['build_id'] ?? ($sourceType === 'builder' ? (string) new ObjectId : null);
 
         // Cek stok tersedia (fail fast sebelum masuk keranjang)
         $existingQty = 0;
@@ -98,7 +100,7 @@ class CartController extends Controller
         }
         if ($product->stock < $existingQty + $qty) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => "Stok {$product->name} tidak mencukupi (tersedia: {$product->stock}).",
             ], 422);
         }
@@ -118,29 +120,29 @@ class CartController extends Controller
                 $this->recalculateCart($cart);
 
                 return response()->json([
-                    'status'  => 'success',
+                    'status' => 'success',
                     'message' => 'Jumlah produk di keranjang diperbarui',
-                    'data'    => $existingItem,
+                    'data' => $existingItem,
                 ]);
             }
         }
 
         // Buat CartItem baru
         $item = CartItem::create([
-            'cart_id'        => $cart->_id,
-            'product_id'     => $product->_id,
-            'source_type'    => $sourceType,
-            'build_id'       => $buildId,
-            'qty'            => $qty,
+            'cart_id' => $cart->_id,
+            'product_id' => $product->_id,
+            'source_type' => $sourceType,
+            'build_id' => $buildId,
+            'qty' => $qty,
             'price_snapshot' => $product->effective_price,
         ]);
 
         $this->recalculateCart($cart);
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Produk berhasil ditambahkan ke keranjang',
-            'data'    => $item,
+            'data' => $item,
         ], 201);
     }
 
@@ -152,9 +154,9 @@ class CartController extends Controller
     {
         $item = CartItem::find($itemId);
 
-        if (!$item) {
+        if (! $item) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Item keranjang tidak ditemukan',
             ], 404);
         }
@@ -165,7 +167,7 @@ class CartController extends Controller
             $cart = $this->resolveCart($request);
             if ((string) $item->cart_id !== (string) $cart->_id) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Item ini bukan milik keranjang Anda',
                 ], 403);
             }
@@ -179,7 +181,7 @@ class CartController extends Controller
         }
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Item berhasil dihapus dari keranjang',
         ]);
     }
@@ -197,7 +199,7 @@ class CartController extends Controller
         $cart->save();
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Keranjang berhasil dikosongkan',
         ]);
     }
