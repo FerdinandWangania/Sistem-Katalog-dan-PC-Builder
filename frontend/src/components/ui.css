@@ -147,6 +147,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   padding: 0.75rem 1.5rem;
   background: var(--color-ink);
   color: var(--color-surface);
@@ -154,10 +155,16 @@
   top: 0;
   z-index: 50;
 }
-.bw-navbar a { color: var(--color-surface); text-decoration: none; font-weight: 600; }
-.bw-navbar-brand { font-weight: 900; letter-spacing: 0.1em; }
+.bw-navbar-light { background: var(--color-surface); color: var(--color-ink); border-bottom: 1px solid var(--color-border); }
+.bw-navbar-light a { color: var(--color-ink); }
+.bw-navbar a { text-decoration: none; font-weight: 600; }
+.bw-navbar-brand { font-weight: 900; letter-spacing: 0.1em; display: inline-flex; align-items: center; gap: 0.4rem; }
+.bw-logo-mark { background: var(--color-ink); color: var(--color-surface); border-radius: 6px; padding: 0 0.3rem; font-size: 0.9em; }
+.bw-navbar-light .bw-logo-mark { background: var(--color-ink); color: var(--color-surface); }
 .bw-navbar-links { display: flex; gap: 1.25rem; }
-.bw-navbar-toggle { display: none; background: none; border: none; color: var(--color-surface); font-size: 1.5rem; cursor: pointer; }
+.bw-navbar-actions { display: flex; gap: 0.6rem; align-items: center; }
+.bw-cart-link { display: inline-flex; align-items: center; }
+.bw-navbar-toggle { display: none; background: none; border: none; color: inherit; font-size: 1.5rem; cursor: pointer; }
 .bw-footer {
   margin-top: 3rem;
   padding: 1.5rem;
@@ -165,12 +172,35 @@
   color: var(--color-secondary);
   font-size: 0.85rem;
 }
+.bw-footer-panel {
+  max-width: 1200px;
+  margin: 3rem auto 1.5rem;
+  background: var(--color-ink);
+  color: var(--color-surface);
+  border-radius: 28px;
+  padding: 2.5rem 2.5rem 1.25rem;
+}
+.bw-footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 2rem; }
+.bw-footer-grid p, .bw-footer-grid span, .bw-footer-grid a { display: block; color: var(--color-muted); font-size: 0.85rem; text-decoration: none; margin-top: 0.6rem; }
+.bw-footer-grid strong { font-size: 0.8rem; letter-spacing: 0.08em; }
+.bw-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
 @media (max-width: 768px) {
   .bw-navbar-toggle { display: block; }
-  .bw-navbar-links { display: none; flex-direction: column; gap: 0.75rem; padding: 0.75rem 0; }
-  .bw-navbar-links.open { display: flex; }
+  .bw-navbar-links, .bw-navbar-actions { display: none; flex-direction: column; gap: 0.75rem; padding: 0.75rem 0; width: 100%; }
+  .bw-navbar-links.open, .bw-navbar-actions.open { display: flex; }
   .bw-navbar { flex-wrap: wrap; }
   .bw-toasts { left: 1rem; }
+  .bw-footer-grid { grid-template-columns: 1fr 1fr; }
 }
 
 /* Builder table becomes per-slot cards on mobile (PRD NFR-005) */
