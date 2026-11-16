@@ -4,11 +4,12 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './index.css';
 import Placeholder from './routes/Placeholder.jsx';
 import UiPreview from './routes/UiPreview.jsx';
+import Home from './routes/Home.jsx';
 
 const page = (title) => <Placeholder title={title} />;
 
 const router = createBrowserRouter([
-  { path: '/', element: page('Home') },
+  { path: '/', element: <Home /> },
   { path: '/katalog', element: page('Katalog') },
   { path: '/produk/:id', element: page('Detail Produk') },
   { path: '/builder', element: page('PC Builder') },
