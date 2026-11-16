@@ -1,9 +1,9 @@
 # Frontend Rules — BuildWise PC Store
 
 ## Design tokens (wajib)
-- Sumber kebenaran visual: `frontend/src/styles/tokens.css`.
-- Jangan hardcode hex di komponen. Pakai CSS variables (misal `var(--color-bg)`).
-- Kalau butuh warna baru: tambahkan dulu ke `tokens.css` dengan komentar `/* replaces: ... */`, baru pakai.
+- Sumber kebenaran visual: `frontend/src/styles/tokens.css` (Tailwind v4 `@theme`).
+- Jangan hardcode hex di komponen. Pakai CSS variables (`var(--color-bg)`) atau utility Tailwind yang dipetakan dari token (misal `bg-surface`, `text-ink`, `border-border`, `bg-accent`).
+- Warna baru hanya boleh masuk lewat `tokens.css` + komentar `/* replaces: ... */` (atau `/* new: ... */` bila memang belum ada padanannya).
 - Referensi PRD: bg `#ECE9F3`, accent lime `#C6F135`, responsif mobile + desktop.
 
 ## Batasan kerja

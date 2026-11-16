@@ -1,10 +1,13 @@
-/* BuildWise design tokens — canonical colors.
+/* BuildWise design tokens — canonical colors (Tailwind v4 @theme).
  * Source: Figma "Web Lanjutan" audit (17 representative frames, 806 solid fills).
  * No published styles/variables in the file; clusters below resolve near-duplicates.
  * Deprecated aliases are listed in `replaces:` comments — do not use them in new code.
+ * @theme emits these as :root CSS variables, so existing var(--color-*) usage
+ * keeps working AND each token is usable as a Tailwind utility
+ * (e.g. bg-surface, text-ink, border-border, bg-accent).
  */
 
-:root {
+@theme {
   /* Page background (PRD §11: #ECE9F3) */
   --color-bg: #ece9f3;
 
