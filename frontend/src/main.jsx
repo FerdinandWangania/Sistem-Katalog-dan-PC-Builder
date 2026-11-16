@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './index.css';
 import Placeholder from './routes/Placeholder.jsx';
+import UiPreview from './routes/UiPreview.jsx';
 
 const page = (title) => <Placeholder title={title} />;
 
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
   { path: '/admin/promo', element: page('Admin Promo') },
   { path: '/admin/keuangan', element: page('Keuangan') },
   { path: '/admin/akun', element: page('Manajemen Akun') },
+  { path: '/ui-preview', element: <UiPreview /> },
   { path: '*', element: page('404 Tidak Ditemukan') },
 ]);
 

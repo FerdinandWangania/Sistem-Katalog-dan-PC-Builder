@@ -1,0 +1,193 @@
+/* BuildWise base components. Colors only via var(--color-*) from tokens.css. */
+
+.bw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.15s ease, transform 0.05s ease;
+}
+.bw-btn:active { transform: scale(0.98); }
+.bw-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.bw-btn-primary { background: var(--color-accent); color: var(--color-ink); }
+.bw-btn-primary:hover:not(:disabled) { filter: brightness(0.95); }
+.bw-btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-border);
+}
+.bw-btn-secondary:hover:not(:disabled) { background: var(--color-subtle); }
+.bw-btn-cta { background: var(--color-primary); color: var(--color-surface); }
+.bw-btn-cta:hover:not(:disabled) { filter: brightness(0.92); }
+.bw-btn-sm { padding: 0.4rem 0.9rem; font-size: 0.85rem; }
+
+/* Badges: yellow pending, green success, red failed, blue info (PRD §11) */
+.bw-badge {
+  display: inline-block;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.bw-badge-pending { background: var(--color-warning); color: var(--color-surface); }
+.bw-badge-success { background: var(--color-success); color: var(--color-surface); }
+.bw-badge-failed { background: var(--color-danger); color: var(--color-surface); }
+.bw-badge-info { background: var(--color-info); color: var(--color-surface); }
+
+/* Modal */
+.bw-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(23, 20, 39, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 100;
+}
+.bw-modal {
+  background: var(--color-surface);
+  border-radius: 20px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 1.5rem;
+}
+.bw-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.bw-modal-head h2 { margin: 0; font-size: 1.2rem; color: var(--color-ink); }
+.bw-modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--color-secondary); }
+.bw-modal-foot { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
+
+/* Toast */
+.bw-toasts { position: fixed; bottom: 1rem; right: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 200; }
+.bw-toast {
+  background: var(--color-ink);
+  color: var(--color-surface);
+  padding: 0.75rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+.bw-toast-success { border-left: 4px solid var(--color-success); }
+.bw-toast-error { border-left: 4px solid var(--color-danger); }
+
+/* Accordion */
+.bw-accordion { border: 1px solid var(--color-border); border-radius: 16px; overflow: hidden; background: var(--color-surface); }
+.bw-accordion-item + .bw-accordion-item { border-top: 1px solid var(--color-border); }
+.bw-accordion-head {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  cursor: pointer;
+  text-align: left;
+}
+.bw-accordion-body { padding: 0 1.25rem 1.25rem; color: var(--color-secondary); }
+
+/* Table (dark purple header per PRD §11) */
+.bw-table-wrap { overflow-x: auto; border-radius: 16px; border: 1px solid var(--color-border); }
+.bw-table { width: 100%; border-collapse: collapse; background: var(--color-surface); font-size: 0.9rem; }
+.bw-table th {
+  background: var(--color-ink);
+  color: var(--color-surface);
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.bw-table td { padding: 0.75rem 1rem; border-top: 1px solid var(--color-border); color: var(--color-ink); }
+.bw-table tr:nth-child(even) td { background: var(--color-subtle); }
+.bw-pagination { display: flex; gap: 0.35rem; align-items: center; justify-content: center; margin-top: 0.75rem; }
+.bw-page-btn {
+  min-width: 2.2rem;
+  height: 2.2rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+.bw-page-btn:hover:not(:disabled) { background: var(--color-subtle); }
+.bw-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.bw-page-btn.active { background: var(--color-ink); color: var(--color-surface); border-color: var(--color-ink); }
+.bw-page-gap { color: var(--color-muted); padding: 0 0.25rem; }
+
+/* States */
+.bw-empty, .bw-error { text-align: center; padding: 3rem 1rem; color: var(--color-secondary); }
+.bw-error { color: var(--color-danger); }
+.bw-skeleton {
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--color-subtle) 25%, var(--color-border) 50%, var(--color-subtle) 75%);
+  background-size: 200% 100%;
+  animation: bw-shimmer 1.2s infinite;
+  min-height: 1rem;
+}
+@keyframes bw-shimmer { to { background-position: -200% 0; } }
+
+/* Layout shell */
+.bw-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-ink);
+  color: var(--color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.bw-navbar a { color: var(--color-surface); text-decoration: none; font-weight: 600; }
+.bw-navbar-brand { font-weight: 900; letter-spacing: 0.1em; }
+.bw-navbar-links { display: flex; gap: 1.25rem; }
+.bw-navbar-toggle { display: none; background: none; border: none; color: var(--color-surface); font-size: 1.5rem; cursor: pointer; }
+.bw-footer {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--color-secondary);
+  font-size: 0.85rem;
+}
+@media (max-width: 768px) {
+  .bw-navbar-toggle { display: block; }
+  .bw-navbar-links { display: none; flex-direction: column; gap: 0.75rem; padding: 0.75rem 0; }
+  .bw-navbar-links.open { display: flex; }
+  .bw-navbar { flex-wrap: wrap; }
+  .bw-toasts { left: 1rem; }
+}
+
+/* Builder table becomes per-slot cards on mobile (PRD NFR-005) */
+@media (max-width: 768px) {
+  .bw-table-builder thead { display: none; }
+  .bw-table-builder, .bw-table-builder tbody, .bw-table-builder tr, .bw-table-builder td { display: block; width: 100%; }
+  .bw-table-builder tr { border: 1px solid var(--color-border); border-radius: 16px; margin-bottom: 0.75rem; background: var(--color-surface); }
+  .bw-table-builder tr:nth-child(even) td { background: transparent; }
+}
+
+/* Sticky cart summary on mobile (PRD NFR-005) */
+@media (max-width: 768px) {
+  .bw-cart-summary { position: sticky; bottom: 0; }
+}
+
+/* UI preview page */
+.bw-preview { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }
+.bw-preview section { margin-bottom: 2.5rem; }
+.bw-preview h2 { color: var(--color-ink); border-bottom: 2px solid var(--color-border); padding-bottom: 0.5rem; }
+.bw-preview .row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }

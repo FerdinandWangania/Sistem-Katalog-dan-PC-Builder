@@ -65,6 +65,10 @@
   /* Warning: amber states (e.g. Kadaluarsa tab pair with danger) */
   --color-warning: #d97706;
 
+  /* Info blue per PRD §11 (badge informasi). */
+  /* new: no Figma equivalent sampled; standard accessible blue */
+  --color-info: #2563eb;
+
   /* Monochrome icons (use currentColor in components) */
   --color-icon: #000000;
 }
