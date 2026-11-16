@@ -1,0 +1,70 @@
+/* BuildWise design tokens — canonical colors.
+ * Source: Figma "Web Lanjutan" audit (17 representative frames, 806 solid fills).
+ * No published styles/variables in the file; clusters below resolve near-duplicates.
+ * Deprecated aliases are listed in `replaces:` comments — do not use them in new code.
+ */
+
+:root {
+  /* Page background (PRD §11: #ECE9F3) */
+  --color-bg: #ece9f3;
+
+  /* Cards, buttons, inputs */
+  --color-surface: #ffffff;
+
+  /* Near-white lavender surfaces: search bars, card footers, QRIS option,
+     zebra rows, mobile cards, table headers, image containers */
+  /* replaces: #F8FAFC, #FAFAFA, #F8F7FC, #F0EDF9 */
+  --color-subtle: #f7f5fc;
+
+  /* Primary dark purple: main text, headers, dark buttons (PRD "ungu tua") */
+  /* replaces: #0E0D1B, #111827, #1E293B, #334155 */
+  --color-ink: #171427;
+
+  /* Secondary body text, subheadings, filter labels, footer */
+  /* replaces: #475569 */
+  --color-secondary: #666178;
+
+  /* Muted/hint text: counts, shipping estimates, footer links */
+  /* replaces: #64748B, #94A3B8 */
+  --color-muted: #9189a8;
+
+  /* Placeholder text: empty-slot labels, search placeholders */
+  /* replaces: #9CA3AF, #A89DC0 */
+  --color-placeholder: #948fa3;
+
+  /* Borders, dividers, sidebar rectangles */
+  /* replaces: #CBD5E1 */
+  --color-border: #dbd5e8;
+
+  /* Primary lime CTA (PRD §11: #C6F135, dark text on top) */
+  /* replaces: #CBF328 */
+  --color-accent: #c6f135;
+
+  /* Purple CTA, links, active menu, table overlays */
+  /* replaces: #4338CA */
+  --color-primary: #8c60f6;
+
+  /* Secondary (non-primary) button background */
+  --color-btn-secondary: #f3f0f7;
+
+  /* Success: paid tabs, general success states */
+  /* replaces: #22C55E, #166534 */
+  --color-success: #16a34a;
+
+  /* Success badge background (e.g. PILIHAN UTAMA) */
+  /* replaces: #F0FDF4 */
+  --color-success-bg: #d1fae5;
+
+  /* Success badge text on success-bg */
+  --color-success-ink: #065f46;
+
+  /* Danger: logout, expired tabs, error text/tabs */
+  /* replaces: #EF4444 */
+  --color-danger: #dc2626;
+
+  /* Warning: amber states (e.g. Kadaluarsa tab pair with danger) */
+  --color-warning: #d97706;
+
+  /* Monochrome icons (use currentColor in components) */
+  --color-icon: #000000;
+}
