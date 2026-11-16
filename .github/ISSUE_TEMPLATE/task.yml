@@ -1,0 +1,76 @@
+name: AI Task
+description: Task kecil yang bisa dikerjakan AI worker (1 issue = 1 PR)
+title: "[TASK] "
+labels: ["ai-ready"]
+body:
+  - type: dropdown
+    id: tipe
+    attributes:
+      label: Tipe
+      description: Untuk filter queue FE / BE. Pilih satu.
+      multiple: false
+      options:
+        - Frontend (FE)
+        - Backend (BE)
+        - Fullstack (FE+BE)
+        - Database / Migration
+        - DevOps / Config
+      default: 2
+    validations:
+      required: true
+
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      description: 1 kalimat, apa yang harus selesai?
+      placeholder: "Contoh: Tambah halaman pricing dengan 3 paket + tombol CTA"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: File/folder relevan, dependensi, link desain
+      placeholder: |
+        Repo: Next.js + Tailwind di /src
+        File relevan: src/app/page.tsx, src/components/
+        Referensi: figma.com/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Checklist yang bisa di-test. AI selesai kalau semua centang.
+      placeholder: |
+        - [ ] Halaman /pricing render 3 kartu
+        - [ ] Responsive mobile + desktop
+        - [ ] Tombol CTA link ke /contact
+        - [ ] `npm run build` lolos
+    validations:
+      required: true
+
+  - type: textarea
+    id: outofscope
+    attributes:
+      label: Out of Scope
+      description: Apa yang JANGAN diubah AI
+      placeholder: |
+        - Jangan ubah auth / payment
+        - Jangan install dependency baru tanpa alasan
+    validations:
+      required: false
+
+  - type: textarea
+    id: testplan
+    attributes:
+      label: Test Plan
+      description: Cara verifikasi manual + otomatis
+      placeholder: |
+        Manual: buka /pricing, klik CTA
+        Otomatis: npm run build, npm run lint
+    validations:
+      required: true
