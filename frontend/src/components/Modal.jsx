@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { X } from 'lucide-react';
 import './ui.css';
 
 export function Modal({ open, title, children, footer, onClose }) {
@@ -18,7 +19,7 @@ export function Modal({ open, title, children, footer, onClose }) {
         <div className="bw-modal-head">
           <h2>{title}</h2>
           <button className="bw-modal-close" onClick={() => onClose?.()} aria-label="Tutup">
-            ×
+            <X className="w-5 h-5" />
           </button>
         </div>
         <div>{children}</div>

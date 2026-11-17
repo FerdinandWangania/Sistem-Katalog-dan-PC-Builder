@@ -1,5 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  ArrowRight,
+  Box,
+  Check,
+  CircuitBoard,
+  Cpu,
+  Fan,
+  Gpu,
+  HardDrive,
+  LayoutGrid,
+  MemoryStick,
+  Plug,
+  Plus,
+} from 'lucide-react';
 import { api, ownerParams } from '../lib/api.js';
 import { get as getData } from '../lib/data.js';
 import { discountPercent, formatIDR, isExternal, promoLink } from '../lib/catalog.js';
@@ -9,17 +23,18 @@ import { Shell } from '../components/Layout.jsx';
 import { ToastProvider, useToast } from '../components/Toast.jsx';
 import './Home.css';
 
-// Tabs on PRODUK POPULER (labels follow the design; values are real category slugs).
+// Tabs on PRODUK POPULER (labels follow the design; values are real category slugs;
+// icons follow frontend/AGENTS.md mapping).
 const TABS = [
-  { label: 'Semua Produk', value: '' },
-  { label: 'CPU', value: 'CPU' },
-  { label: 'MOBO', value: 'Motherboard' },
-  { label: 'GPU', value: 'GPU' },
-  { label: 'RAM', value: 'RAM' },
-  { label: 'SSD', value: 'SSD' },
-  { label: 'PSU', value: 'PSU' },
-  { label: 'CASE', value: 'Case' },
-  { label: 'COOL', value: 'Case Fan' },
+  { label: 'Semua Produk', value: '', icon: LayoutGrid },
+  { label: 'CPU', value: 'CPU', icon: Cpu },
+  { label: 'MOBO', value: 'Motherboard', icon: CircuitBoard },
+  { label: 'GPU', value: 'GPU', icon: Gpu },
+  { label: 'RAM', value: 'RAM', icon: MemoryStick },
+  { label: 'SSD', value: 'SSD', icon: HardDrive },
+  { label: 'PSU', value: 'PSU', icon: Plug },
+  { label: 'CASE', value: 'Case', icon: Box },
+  { label: 'COOL', value: 'Case Fan', icon: Fan },
 ];
 
 function Hero({ promos }) {
@@ -132,11 +147,14 @@ function HomeInner() {
       <section>
         <div className="bw-section-head">
           <h2 className="bw-section-title">PRODUK POPULER</h2>
-          <Link to="/katalog">LIHAT SEMUA PRODUK ➔</Link>
+          <Link to="/katalog" className="bw-see-all">
+            LIHAT SEMUA PRODUK <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
         <div className="bw-chips">
           {TABS.map((t) => (
             <button key={t.label} className={`bw-chip${tab === t.value ? ' active' : ''}`} onClick={() => setTab(t.value)}>
+              <t.icon className="w-4 h-4" />
               {t.label}
             </button>
           ))}
@@ -178,11 +196,14 @@ function HomeInner() {
                     <strong>{formatIDR(pkg.total_price)}</strong>
                     <ul className="bw-package-specs">
                       {packageSpecs(pkg).map((s) => (
-                        <li key={s}>✓ {s}</li>
+                        <li key={s}>
+                          <Check className="w-4 h-4 text-success" />
+                          {s}
+                        </li>
                       ))}
                     </ul>
                     <button className="bw-btn bw-btn-primary bw-btn-block" onClick={() => addPackage(pkg)}>
-                      + TAMBAH KE KERANJANG
+                      <Plus className="w-4 h-4" /> TAMBAH KE KERANJANG
                     </button>
                   </div>
                 </div>

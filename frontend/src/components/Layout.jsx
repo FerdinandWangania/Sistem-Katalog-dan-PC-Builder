@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Menu, ShoppingCart } from 'lucide-react';
 import './ui.css';
 
 export function Navbar() {
@@ -10,7 +11,7 @@ export function Navbar() {
         <span className="bw-logo-mark">✕</span> BUILDWISE
       </Link>
       <button className="bw-navbar-toggle" onClick={() => setOpen(!open)} aria-label="Menu">
-        ☰
+        <Menu className="w-6 h-6" />
       </button>
       <div className={`bw-navbar-links${open ? ' open' : ''}`}>
         <Link to="/" onClick={() => setOpen(false)}>
@@ -22,11 +23,7 @@ export function Navbar() {
       </div>
       <div className={`bw-navbar-actions${open ? ' open' : ''}`}>
         <Link to="/keranjang" className="bw-cart-link" aria-label="Keranjang" onClick={() => setOpen(false)}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="9" cy="21" r="1" />
-            <circle cx="20" cy="21" r="1" />
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-          </svg>
+          <ShoppingCart className="w-5 h-5" />
         </Link>
         <Link to="/builder" className="bw-btn bw-btn-primary bw-btn-sm" onClick={() => setOpen(false)}>
           PC Builder

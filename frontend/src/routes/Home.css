@@ -30,9 +30,14 @@
   text-decoration: none;
   color: var(--color-ink);
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
 }
 .bw-section-head { display: flex; justify-content: space-between; align-items: baseline; }
 .bw-section-head a { color: var(--color-primary); font-weight: 700; text-decoration: none; }
+.bw-see-all { display: inline-flex; align-items: center; gap: 0.3rem; }
 .bw-grid-products { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1.25rem; }
 .bw-section-title { position: relative; padding-bottom: 0.4rem; }
 .bw-section-title::after {
@@ -59,7 +64,7 @@
 }
 .bw-package-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--color-subtle); }
 .bw-package-specs { list-style: none; margin: 0.5rem 0; padding: 0; font-size: 0.8rem; color: var(--color-secondary); }
-.bw-package-specs li { padding: 0.1rem 0; }
+.bw-package-specs li { padding: 0.1rem 0; display: flex; align-items: center; gap: 0.35rem; }
 @media (max-width: 900px) {
   .bw-grid-4, .bw-grid-products { grid-template-columns: repeat(2, 1fr); }
 }

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { discountPercent, effectivePrice, formatIDR } from '../lib/catalog.js';
 import './ProductCard.css';
 
@@ -65,7 +66,7 @@ export function ProductCard({ product, onAdd }) {
         </dl>
         {onAdd && (
           <button className="bw-btn bw-btn-primary bw-btn-block" onClick={() => onAdd(product)}>
-            + TAMBAH KE KERANJANG
+            <Plus className="w-4 h-4" /> TAMBAH KE KERANJANG
           </button>
         )}
       </div>

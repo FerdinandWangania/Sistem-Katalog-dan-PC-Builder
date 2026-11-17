@@ -1,3 +1,4 @@
+import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import './ui.css';
 
 // columns: [{ key, label, render?: (row) => node }]
@@ -30,7 +31,7 @@ export function DataTable({ columns = [], rows = [], pagination, builderCards = 
   );
 }
 
-// « ‹ 1 2 3 … 10 › » — numbered with ellipsis, like the design reference
+// Numbered pagination with ellipsis (first/prev/numbers/next/last), like the design reference
 export function Pagination({ page = 1, pageSize = 10, total = 0, onPage }) {
   const pages = Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
   if (pages <= 1 || !onPage) return null;
@@ -51,21 +52,21 @@ export function Pagination({ page = 1, pageSize = 10, total = 0, onPage }) {
     if (i > 0 && n - list[i - 1] > 1) items.push('…');
     items.push(n);
   });
-  const btn = (label, target, disabled, aria) => (
+  const btn = (Icon, target, disabled, aria) => (
     <button
-      key={aria + label}
+      key={aria}
       className="bw-page-btn"
       disabled={disabled}
       onClick={() => onPage(target)}
       aria-label={aria}
     >
-      {label}
+      <Icon className="w-4 h-4" />
     </button>
   );
   return (
     <div className="bw-pagination">
-      {btn('«', 1, page <= 1, 'Halaman pertama')}
-      {btn('‹', page - 1, page <= 1, 'Sebelumnya')}
+      {btn(ChevronsLeft, 1, page <= 1, 'Halaman pertama')}
+      {btn(ChevronLeft, page - 1, page <= 1, 'Sebelumnya')}
       {items.map((n, i) =>
         n === '…' ? (
           <span key={`gap${i}`} className="bw-page-gap">
@@ -82,8 +83,8 @@ export function Pagination({ page = 1, pageSize = 10, total = 0, onPage }) {
           </button>
         ),
       )}
-      {btn('›', page + 1, page >= pages, 'Berikutnya')}
-      {btn('»', pages, page >= pages, 'Halaman terakhir')}
+      {btn(ChevronRight, page + 1, page >= pages, 'Berikutnya')}
+      {btn(ChevronsRight, pages, page >= pages, 'Halaman terakhir')}
     </div>
   );
 }

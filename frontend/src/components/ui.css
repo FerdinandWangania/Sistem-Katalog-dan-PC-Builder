@@ -124,6 +124,9 @@
   color: var(--color-ink);
   font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .bw-page-btn:hover:not(:disabled) { background: var(--color-subtle); }
 .bw-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }

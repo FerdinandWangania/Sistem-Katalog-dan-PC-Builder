@@ -8,6 +8,9 @@
  */
 
 @theme {
+  /* Default font (Figma: Plus Jakarta Sans on all sampled text nodes) */
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+
   /* Page background (PRD §11: #ECE9F3) */
   --color-bg: #ece9f3;
 
