@@ -1,34 +1,25 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import './ui.css';
 
 export function Navbar() {
-  const [open, setOpen] = useState(false);
   return (
     <nav className="bw-navbar bw-navbar-light">
-      <Link to="/" className="bw-navbar-brand" onClick={() => setOpen(false)}>
+      <Link to="/" className="bw-navbar-brand">
         <span className="bw-logo-mark">✕</span> BUILDWISE
       </Link>
-      <button className="bw-navbar-toggle" onClick={() => setOpen(!open)} aria-label="Menu">
-        <Menu className="w-6 h-6" />
-      </button>
-      <div className={`bw-navbar-links${open ? ' open' : ''}`}>
-        <Link to="/" onClick={() => setOpen(false)}>
-          Home
-        </Link>
-        <Link to="/katalog" onClick={() => setOpen(false)}>
-          Katalog
-        </Link>
+      <div className="bw-navbar-links">
+        <Link to="/">Home</Link>
+        <Link to="/katalog">Katalog</Link>
       </div>
-      <div className={`bw-navbar-actions${open ? ' open' : ''}`}>
-        <Link to="/keranjang" className="bw-cart-link" aria-label="Keranjang" onClick={() => setOpen(false)}>
+      <div className="bw-navbar-actions">
+        <Link to="/keranjang" className="bw-cart-link" aria-label="Keranjang">
           <ShoppingCart className="w-5 h-5" />
         </Link>
-        <Link to="/builder" className="bw-btn bw-btn-primary bw-btn-sm" onClick={() => setOpen(false)}>
+        <Link to="/builder" className="bw-btn bw-btn-primary bw-btn-sm bw-navbar-cta">
           PC Builder
         </Link>
-        <Link to="/login" className="bw-btn bw-btn-cta bw-btn-sm" onClick={() => setOpen(false)}>
+        <Link to="/login" className="bw-btn bw-btn-cta bw-btn-sm bw-navbar-cta">
           Log in
         </Link>
       </div>

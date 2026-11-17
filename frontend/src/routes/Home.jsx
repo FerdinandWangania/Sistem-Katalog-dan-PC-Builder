@@ -1,18 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
-  Box,
   Check,
-  CircuitBoard,
   Cpu,
-  Fan,
-  Gpu,
-  HardDrive,
+  House,
   LayoutGrid,
-  MemoryStick,
-  Plug,
   Plus,
+  Search,
+  SlidersHorizontal,
+  User,
 } from 'lucide-react';
 import { api, ownerParams } from '../lib/api.js';
 import { get as getData } from '../lib/data.js';
@@ -22,20 +19,6 @@ import { EmptyState, ErrorState, Skeleton } from '../components/States.jsx';
 import { Shell } from '../components/Layout.jsx';
 import { ToastProvider, useToast } from '../components/Toast.jsx';
 import './Home.css';
-
-// Tabs on PRODUK POPULER (labels follow the design; values are real category slugs;
-// icons follow frontend/AGENTS.md mapping).
-const TABS = [
-  { label: 'Semua Produk', value: '', icon: LayoutGrid },
-  { label: 'CPU', value: 'CPU', icon: Cpu },
-  { label: 'MOBO', value: 'Motherboard', icon: CircuitBoard },
-  { label: 'GPU', value: 'GPU', icon: Gpu },
-  { label: 'RAM', value: 'RAM', icon: MemoryStick },
-  { label: 'SSD', value: 'SSD', icon: HardDrive },
-  { label: 'PSU', value: 'PSU', icon: Plug },
-  { label: 'CASE', value: 'Case', icon: Box },
-  { label: 'COOL', value: 'Case Fan', icon: Fan },
-];
 
 function Hero({ promos }) {
   if (!promos?.length) {
@@ -78,13 +61,116 @@ function packageSpecs(pkg) {
     .filter(Boolean);
 }
 
+// ---------- Mobile-only blocks (reference: mobile-first homepage structure) ----------
+
+const RECENT_KEY = 'bw_recent_search';
+const WISH_KEY = 'bw_wishlist';
+
+function loadList(key) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function MobileSearch() {
+  const navigate = useNavigate();
+  const [q, setQ] = useState('');
+  const [recent, setRecent] = useState(loadList(RECENT_KEY));
+  const submit = (value) => {
+    const v = (value ?? q).trim();
+    if (!v) return;
+    const next = [v, ...recent.filter((r) => r !== v)].slice(0, 5);
+    setRecent(next);
+    try {
+      localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+    } catch {
+      // abaikan bila storage tidak tersedia
+    }
+    navigate(`/katalog?q=${encodeURIComponent(v)}`);
+  };
+  return (
+    <div className="bw-m-search">
+      <div className="bw-m-searchbar">
+        <Search className="w-5 h-5" />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') submit();
+          }}
+          placeholder="Search for products, brands..."
+          aria-label="Cari produk"
+        />
+        <Link to="/katalog" aria-label="Filter katalog">
+          <SlidersHorizontal className="w-5 h-5" />
+        </Link>
+      </div>
+      {recent.length > 0 && (
+        <div className="bw-m-recent">
+          {recent.map((r) => (
+            <button key={r} onClick={() => submit(r)}>
+              {r}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MobileFeatured({ products, wishlist, onWish, onAdd }) {
+  if (!products?.length) return null;
+  // No own heading: reuses the PRODUK POPULER heading + chips above (one section).
+  return (
+    <div className="bw-m-block">
+      <div className="bw-m-row">
+        {products.slice(0, 8).map((p) => {
+          const id = p._id || p.id;
+          return (
+            <ProductCard
+              key={id}
+              product={p}
+              onAdd={onAdd}
+              wishlisted={wishlist.includes(id)}
+              onWish={onWish}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MobileBottomNav() {
+  const { pathname } = useLocation();
+  // Semua menu navbar pindah ke bawah, kecuali keranjang (tetap di atas).
+  const items = [
+    { to: '/', label: 'Home', icon: House },
+    { to: '/katalog', label: 'Katalog', icon: LayoutGrid },
+    { to: '/builder', label: 'Builder', icon: Cpu },
+    { to: '/login', label: 'Account', icon: User },
+  ];
+  return (
+    <nav className="bw-m-bottomnav">
+      {items.map((it) => (
+        <Link key={it.to} to={it.to} className={pathname === it.to ? 'active' : ''}>
+          <it.icon className="w-5 h-5" />
+          {it.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 function HomeInner() {
   const toast = useToast();
   const [promos, setPromos] = useState(null);
   const [products, setProducts] = useState(null);
   const [packages, setPackages] = useState(null);
-  const [tab, setTab] = useState('');
   const [error, setError] = useState(null);
+  const [wishlist, setWishlist] = useState(loadList(WISH_KEY));
 
   useEffect(() => {
     let alive = true;
@@ -128,14 +214,25 @@ function HomeInner() {
     }
   };
 
+  const toggleWish = (id) => {
+    const next = wishlist.includes(id) ? wishlist.filter((w) => w !== id) : [...wishlist, id];
+    setWishlist(next);
+    try {
+      localStorage.setItem(WISH_KEY, JSON.stringify(next));
+    } catch {
+      // abaikan bila storage tidak tersedia
+    }
+  };
+
   const loading = promos === null || products === null || packages === null;
   const popular = [...(products || [])]
-    .filter((p) => !tab || p.category === tab)
     .sort((a, b) => discountPercent(b) - discountPercent(a))
     .slice(0, 8);
 
   return (
     <div className="bw-home">
+      {/* Mobile-first blocks (hidden on desktop) */}
+      <MobileSearch />
       {error ? (
         <ErrorState message={error.message} onRetry={() => window.location.reload()} />
       ) : loading ? (
@@ -143,34 +240,6 @@ function HomeInner() {
       ) : (
         <Hero promos={promos} />
       )}
-
-      <section>
-        <div className="bw-section-head">
-          <h2 className="bw-section-title">PRODUK POPULER</h2>
-          <Link to="/katalog" className="bw-see-all">
-            LIHAT SEMUA PRODUK <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-        <div className="bw-chips">
-          {TABS.map((t) => (
-            <button key={t.label} className={`bw-chip${tab === t.value ? ' active' : ''}`} onClick={() => setTab(t.value)}>
-              <t.icon className="w-4 h-4" />
-              {t.label}
-            </button>
-          ))}
-        </div>
-        {loading ? (
-          <Skeleton height="200px" />
-        ) : popular.length === 0 ? (
-          <EmptyState title="Belum ada produk di kategori ini" />
-        ) : (
-          <div className="bw-grid-products">
-            {popular.map((p) => (
-              <ProductCard key={p._id || p.id} product={p} onAdd={addProduct} />
-            ))}
-          </div>
-        )}
-      </section>
 
       <section>
         <h2 className="bw-section-title bw-centered">REKOMENDASI PC RAKITAN</h2>
@@ -212,6 +281,33 @@ function HomeInner() {
           </div>
         )}
       </section>
+
+      <section>
+        <div className="bw-section-head">
+          <h2 className="bw-section-title">PRODUK POPULER</h2>
+          <Link to="/katalog" className="bw-see-all">
+            LIHAT SEMUA PRODUK <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+        {!loading && !error && (
+          <MobileFeatured products={popular} wishlist={wishlist} onWish={toggleWish} onAdd={addProduct} />
+        )}
+        <div className="bw-desktop-only">
+        {loading ? (
+          <Skeleton height="200px" />
+        ) : popular.length === 0 ? (
+          <EmptyState title="Belum ada produk di kategori ini" />
+        ) : (
+          <div className="bw-grid-products">
+            {popular.map((p) => (
+              <ProductCard key={p._id || p.id} product={p} onAdd={addProduct} />
+            ))}
+          </div>
+        )}
+        </div>
+      </section>
+
+      <MobileBottomNav />
     </div>
   );
 }

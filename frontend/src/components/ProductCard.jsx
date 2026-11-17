@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Heart, Plus } from 'lucide-react';
 import { discountPercent, effectivePrice, formatIDR } from '../lib/catalog.js';
 import './ProductCard.css';
 
@@ -32,14 +32,22 @@ export function specRows(product, max = 3) {
     .map((k) => ({ label: prettyLabel(k), value: String(specs[k]) }));
 }
 
-export function ProductCard({ product, onAdd }) {
+export function ProductCard({ product, onAdd, wishlisted, onWish }) {
   if (!product) return null;
   const pct = discountPercent(product);
-  const badge = product.badge || (pct > 0 ? '★ PILIHAN UTAMA' : null);
   return (
     <div className="bw-product-card">
+      {onWish && (
+        <button
+          className={`bw-wish${wishlisted ? ' active' : ''}`}
+          onClick={() => onWish(product._id || product.id)}
+          aria-label="Wishlist"
+        >
+          <Heart className="w-4 h-4" />
+        </button>
+      )}
       <Link to={`/produk/${product._id || product.id}`} className="bw-product-media">
-        {badge && <span className="bw-product-flag">{badge}</span>}
+        {pct > 0 && <span className="bw-product-flag">{pct}%</span>}
         {product.image ? (
           <img src={product.image} alt={product.name} loading="lazy" />
         ) : (
@@ -54,7 +62,6 @@ export function ProductCard({ product, onAdd }) {
         <div className="bw-product-price">
           {pct > 0 && <span className="bw-product-was">{formatIDR(product.price)}</span>}
           <strong>{formatIDR(effectivePrice(product))}</strong>
-          {pct > 0 && <span className="bw-product-save">HEMAT {pct}%</span>}
         </div>
         <dl className="bw-product-specs">
           {specRows(product).map((s) => (
