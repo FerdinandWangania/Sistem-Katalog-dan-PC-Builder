@@ -6,13 +6,14 @@ import Placeholder from './routes/Placeholder.jsx';
 import UiPreview from './routes/UiPreview.jsx';
 import Home from './routes/Home.jsx';
 import Katalog from './routes/Katalog.jsx';
+import DetailProduk from './routes/DetailProduk.jsx';
 
 const page = (title) => <Placeholder title={title} />;
 
 const router = createBrowserRouter([
   { path: '/', element: <Home /> },
   { path: '/katalog', element: <Katalog /> },
-  { path: '/produk/:id', element: page('Detail Produk') },
+  { path: '/produk/:id', element: <DetailProduk /> },
   { path: '/builder', element: page('PC Builder') },
   { path: '/keranjang', element: page('Keranjang') },
   { path: '/checkout', element: page('Checkout') },

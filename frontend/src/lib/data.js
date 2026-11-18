@@ -4,7 +4,7 @@
 // Fallback is active only when VITE_USE_MOCK=true (dev/demo without backend).
 // Trigger: network failure OR HTTP >= 500 (e.g. BE down with missing ext-mongodb).
 
-import { api } from './api.js';
+import { ApiError, api } from './api.js';
 import { mockProducts } from '../mocks/products.js';
 import { mockPromotions } from '../mocks/promotions.js';
 import { mockPackages } from '../mocks/packages.js';
@@ -40,11 +40,27 @@ function isDown(error) {
   return typeof error.status === 'number' && error.status >= 500;
 }
 
+/** True bila mock fallback boleh dipakai untuk error ini. */
+export function shouldMock(error) {
+  return USE_MOCK && isDown(error);
+}
+
+/** Mock GET /products/:id (cari di mockProducts, 404 bila tak ada). */
+function mockDetail(id) {
+  const found = mockProducts.find((p) => (p._id || p.id) === id);
+  if (!found) throw new ApiError(404, { message: 'Produk tidak ditemukan' });
+  return { status: 'success', data: found };
+}
+
 /** GET with mock fallback. Signature mirrors api.get(path, { query }). */
 export async function get(path, { query } = {}) {
   try {
     return await api.get(path, { query });
   } catch (error) {
+    if (path.startsWith('/products/') && shouldMock(error)) {
+      console.warn(`[mock] backend unreachable (${path}), using mock data.`, error?.message || error);
+      return mockDetail(path.slice('/products/'.length));
+    }
     if (USE_MOCK && MOCKS[path] && isDown(error)) {
       console.warn(`[mock] backend unreachable (${path}), using mock data.`, error?.message || error);
       return MOCKS[path](query);
