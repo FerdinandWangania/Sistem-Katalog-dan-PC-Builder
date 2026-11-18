@@ -4,6 +4,7 @@
 - Sumber kebenaran visual: `frontend/src/styles/tokens.css` (Tailwind v4 `@theme`).
 - Jangan hardcode hex di komponen. Pakai CSS variables (`var(--color-bg)`) atau utility Tailwind yang dipetakan dari token (misal `bg-surface`, `text-ink`, `border-border`, `bg-accent`).
 - Warna baru hanya boleh masuk lewat `tokens.css` + komentar `/* replaces: ... */` (atau `/* new: ... */` bila memang belum ada padanannya).
+- Jangan tambah file CSS vanilla baru — semua styling lewat utility Tailwind (termasuk varian responsif `md:`/`max-md:` dan arbitrary value). Satu-satunya CSS authoring yang tersisa: `tokens.css` (@theme), `index.css` (import + body + keyframes).
 - Referensi PRD: bg `#ECE9F3`, accent lime `#C6F135`, responsif mobile + desktop.
 - Font default seluruh halaman: Plus Jakarta Sans via var(--font-sans). Jangan hardcode font-family di komponen. Weight yang dipakai: 400 body, 600 semibold, 700/800 heading.
 

@@ -18,15 +18,15 @@ import { ProductCard } from '../components/ProductCard.jsx';
 import { EmptyState, ErrorState, Skeleton } from '../components/States.jsx';
 import { Shell } from '../components/Layout.jsx';
 import { ToastProvider, useToast } from '../components/Toast.jsx';
-import './Home.css';
+import { btnClasses } from '../components/Button.jsx';
 
 function Hero({ promos }) {
   if (!promos?.length) {
     return (
-      <div className="bw-hero-fallback">
+      <div className="bg-ink text-surface px-8 py-12 rounded-[28px] text-center max-md:px-5 max-md:py-8 max-md:rounded-[20px]">
         <h1>Rakit PC Impianmu</h1>
-        <p>Katalog komponen + PC Builder dengan cek kompatibilitas otomatis.</p>
-        <Link to="/builder" className="bw-btn bw-btn-primary">
+        <p className="text-subtle">Katalog komponen + PC Builder dengan cek kompatibilitas otomatis.</p>
+        <Link to="/builder" className={btnClasses('primary')}>
           Mulai Merakit
         </Link>
       </div>
@@ -35,19 +35,19 @@ function Hero({ promos }) {
   const promo = promos[0];
   const href = promoLink(promo);
   const inner = promo.banner_image ? (
-    <img src={promo.banner_image} alt={promo.title || 'Promo'} />
+    <img src={promo.banner_image} alt={promo.title || 'Promo'} className="w-full block aspect-[3/1] object-cover max-md:aspect-[16/10]" />
   ) : (
-    <div className="bw-hero-fallback">
+    <div className="bg-ink text-surface px-8 py-12 rounded-[28px] text-center max-md:px-5 max-md:py-8 max-md:rounded-[20px]">
       <h1>{promo.title || 'Promo Spesial'}</h1>
-      <p>{promo.discount_percentage ? `Diskon hingga ${promo.discount_percentage}%` : 'Penawaran terbatas.'}</p>
+      <p className="text-subtle">{promo.discount_percentage ? `Diskon hingga ${promo.discount_percentage}%` : 'Penawaran terbatas.'}</p>
     </div>
   );
   return isExternal(href) ? (
-    <a className="bw-hero" href={href} target="_blank" rel="noreferrer">
+    <a className="block rounded-[28px] overflow-hidden no-underline" href={href} target="_blank" rel="noreferrer">
       {inner}
     </a>
   ) : (
-    <Link className="bw-hero" to={href}>
+    <Link className="block rounded-[28px] overflow-hidden no-underline" to={href}>
       {inner}
     </Link>
   );
@@ -91,8 +91,8 @@ function MobileSearch() {
     navigate(`/katalog?q=${encodeURIComponent(v)}`);
   };
   return (
-    <div className="bw-m-search">
-      <div className="bw-m-searchbar">
+    <div className="hidden max-md:block max-md:mb-5">
+      <div className="flex items-center gap-[0.6rem] bg-surface border border-border rounded-full px-4 py-[0.6rem] text-muted">
         <Search className="w-5 h-5" />
         <input
           value={q}
@@ -102,15 +102,20 @@ function MobileSearch() {
           }}
           placeholder="Search for products, brands..."
           aria-label="Cari produk"
+          className="flex-1 border-0 outline-none bg-transparent text-[0.9rem] text-ink"
         />
-        <Link to="/katalog" aria-label="Filter katalog">
+        <Link to="/katalog" aria-label="Filter katalog" className="text-muted inline-flex">
           <SlidersHorizontal className="w-5 h-5" />
         </Link>
       </div>
       {recent.length > 0 && (
-        <div className="bw-m-recent">
+        <div className="flex gap-[0.4rem] flex-wrap mt-[0.6rem]">
           {recent.map((r) => (
-            <button key={r} onClick={() => submit(r)}>
+            <button
+              key={r}
+              onClick={() => submit(r)}
+              className="bg-subtle border-0 rounded-full px-[0.8rem] py-[0.35rem] text-[0.8rem] text-secondary"
+            >
               {r}
             </button>
           ))}
@@ -124,8 +129,8 @@ function MobileFeatured({ products, wishlist, onWish, onAdd }) {
   if (!products?.length) return null;
   // No own heading: reuses the PRODUK POPULER heading + chips above (one section).
   return (
-    <div className="bw-m-block">
-      <div className="bw-m-row">
+      <div className="hidden max-md:block">
+        <div className="grid grid-cols-2 gap-3 mt-4">
         {products.slice(0, 8).map((p) => {
           const id = p._id || p.id;
           return (
@@ -135,6 +140,7 @@ function MobileFeatured({ products, wishlist, onWish, onAdd }) {
               onAdd={onAdd}
               wishlisted={wishlist.includes(id)}
               onWish={onWish}
+              minimal
             />
           );
         })}
@@ -153,9 +159,15 @@ function MobileBottomNav() {
     { to: '/login', label: 'Account', icon: User },
   ];
   return (
-    <nav className="bw-m-bottomnav">
+    <nav className="hidden max-md:flex fixed left-0 right-0 bottom-0 z-[60] bg-surface border-t border-border px-4 pt-[0.6rem] pb-[calc(0.6rem+env(safe-area-inset-bottom))]">
       {items.map((it) => (
-        <Link key={it.to} to={it.to} className={pathname === it.to ? 'active' : ''}>
+        <Link
+          key={it.to}
+          to={it.to}
+          className={`flex-1 flex flex-col items-center gap-[0.15rem] no-underline text-[0.7rem] font-semibold ${
+            pathname === it.to ? 'text-primary' : 'text-muted'
+          }`}
+        >
           <it.icon className="w-5 h-5" />
           {it.label}
         </Link>
@@ -230,7 +242,7 @@ function HomeInner() {
     .slice(0, 8);
 
   return (
-    <div className="bw-home">
+    <div className="max-w-[1200px] mx-auto p-6 max-md:p-4 max-md:pb-20">
       {/* Mobile-first blocks (hidden on desktop) */}
       <MobileSearch />
       {error ? (
@@ -241,37 +253,44 @@ function HomeInner() {
         <Hero promos={promos} />
       )}
 
-      <section>
-        <h2 className="bw-section-title bw-centered">REKOMENDASI PC RAKITAN</h2>
+      <section className="my-10 max-md:my-7">
+        <h2 className="relative pb-[0.4rem] text-ink text-center after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-0 after:w-12 after:h-[3px] after:bg-primary after:rounded-sm">
+          REKOMENDASI PC RAKITAN
+        </h2>
         {packages === null ? (
           <Skeleton height="120px" />
         ) : packages.length === 0 ? (
           <EmptyState title="Belum ada paket rakitan" />
         ) : (
-          <div className="bw-grid-packages">
+          <div className="grid grid-cols-3 gap-4 max-w-[1000px] mx-auto mt-5 max-[900px]:flex max-[900px]:gap-3 max-[900px]:overflow-x-auto max-[900px]:pb-2 max-[900px]:max-w-none max-[900px]:-mx-4 max-[900px]:px-4">
             {packages.slice(0, 3).map((pkg) => {
               const img = pkg.items?.[0]?.product?.image;
               return (
-                <div key={pkg._id || pkg.id} className="bw-package-card">
+                <div
+                  key={pkg._id || pkg.id}
+                  className="bg-surface border border-border rounded-[20px] overflow-hidden flex flex-col max-[900px]:flex-[0_0_16rem]"
+                >
                   {img ? (
-                    <img src={img} alt={pkg.name} loading="lazy" />
+                    <img src={img} alt={pkg.name} loading="lazy" className="w-full aspect-[4/3] object-cover block bg-subtle" />
                   ) : (
-                    <div className="bw-product-img-fallback">{pkg.tag || 'Paket'}</div>
+                    <div className="w-full aspect-[4/3] bg-subtle flex items-center justify-center text-muted font-bold">
+                      {pkg.tag || 'Paket'}
+                    </div>
                   )}
-                  <div className="bw-product-body">
-                    <Link to={`/paket/${pkg._id || pkg.id}`} className="bw-product-name">
+                  <div className="px-4 pt-[0.9rem] pb-[1.1rem] flex flex-col gap-[0.3rem] flex-1">
+                    <Link to={`/paket/${pkg._id || pkg.id}`} className="font-bold no-underline text-ink">
                       {pkg.name}
                     </Link>
                     <strong>{formatIDR(pkg.total_price)}</strong>
-                    <ul className="bw-package-specs">
+                    <ul className="list-none my-2 p-0 text-[0.8rem] text-secondary">
                       {packageSpecs(pkg).map((s) => (
-                        <li key={s}>
+                        <li key={s} className="py-[0.1rem] flex items-center gap-[0.35rem]">
                           <Check className="w-4 h-4 text-success" />
                           {s}
                         </li>
                       ))}
                     </ul>
-                    <button className="bw-btn bw-btn-primary bw-btn-block" onClick={() => addPackage(pkg)}>
+                    <button className={btnClasses('primary', null, 'w-full mt-auto text-[0.8rem] px-4 py-[0.6rem]')} onClick={() => addPackage(pkg)}>
                       <Plus className="w-4 h-4" /> TAMBAH KE KERANJANG
                     </button>
                   </div>
@@ -282,23 +301,25 @@ function HomeInner() {
         )}
       </section>
 
-      <section>
-        <div className="bw-section-head">
-          <h2 className="bw-section-title">PRODUK POPULER</h2>
-          <Link to="/katalog" className="bw-see-all">
+      <section className="my-10 max-md:my-7">
+        <div className="flex justify-between items-baseline max-md:flex-wrap max-md:gap-2">
+          <h2 className="relative pb-[0.4rem] text-ink after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-12 after:h-[3px] after:bg-primary after:rounded-sm">
+            PRODUK POPULER
+          </h2>
+          <Link to="/katalog" className="text-primary font-bold no-underline inline-flex items-center gap-[0.3rem] max-md:hidden">
             LIHAT SEMUA PRODUK <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
         {!loading && !error && (
           <MobileFeatured products={popular} wishlist={wishlist} onWish={toggleWish} onAdd={addProduct} />
         )}
-        <div className="bw-desktop-only">
+        <div className="max-md:hidden">
         {loading ? (
           <Skeleton height="200px" />
         ) : popular.length === 0 ? (
           <EmptyState title="Belum ada produk di kategori ini" />
         ) : (
-          <div className="bw-grid-products">
+          <div className="grid grid-cols-4 gap-4 mt-5 max-[900px]:grid-cols-2 max-md:gap-3">
             {popular.map((p) => (
               <ProductCard key={p._id || p.id} product={p} onAdd={addProduct} />
             ))}
