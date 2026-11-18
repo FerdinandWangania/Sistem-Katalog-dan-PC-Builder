@@ -19,15 +19,18 @@ function envelope(data) {
 // and returns a backend-shaped envelope. Add entries here as screens need them.
 const MOCKS = {
   '/promotions': () => envelope(mockPromotions),
-  '/products': (query = {}) =>
-    envelope(
-      mockProducts.filter((p) => {
-        if (query.category && p.category !== query.category) return false;
-        if (query.brand && p.brand !== query.brand) return false;
-        if (query.q && !p.name.toLowerCase().includes(String(query.q).toLowerCase())) return false;
-        return true;
-      }),
-    ),
+  '/products': (query = {}) => {
+    const eff = (p) => (p.discount_price > 0 ? p.discount_price : p.price);
+    const list = mockProducts.filter((p) => {
+      if (query.category && p.category !== query.category) return false;
+      if (query.brand && p.brand !== query.brand) return false;
+      if (query.q && !p.name.toLowerCase().includes(String(query.q).toLowerCase())) return false;
+      return true;
+    });
+    if (query.sort === 'price_asc') list.sort((a, b) => eff(a) - eff(b));
+    else if (query.sort === 'price_desc') list.sort((a, b) => eff(b) - eff(a));
+    return envelope(list);
+  },
   '/packages': () => envelope(mockPackages),
 };
 
