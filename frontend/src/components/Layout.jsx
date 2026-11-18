@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 import { btnClasses } from './Button.jsx';
+import { MobileBottomNav } from './MobileBottomNav.jsx';
 
 export function Navbar() {
   return (
@@ -95,12 +96,13 @@ export function Footer() {
   );
 }
 
-export function Shell({ children }) {
+export function Shell({ children, hideFooter = false }) {
   return (
     <>
       <Navbar />
       {children}
-      <Footer />
+      <MobileBottomNav />
+      {!hideFooter && <Footer />}
     </>
   );
 }

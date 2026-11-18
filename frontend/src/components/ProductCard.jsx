@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Heart, Plus } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { discountPercent, effectivePrice, formatIDR } from '../lib/catalog.js';
-import { btnClasses } from './Button.jsx';
 
 const SPEC_LABELS = {
   socket: 'Socket',
@@ -35,8 +34,12 @@ export function specRows(product, max = 3) {
 export function ProductCard({ product, onAdd, wishlisted, onWish, minimal = false }) {
   if (!product) return null;
   const pct = discountPercent(product);
+  const stock = product.stock;
   return (
-    <div className="relative flex flex-col bg-surface border border-border rounded-[20px] overflow-hidden text-ink">
+    <Link
+      to={`/produk/${product._id || product.id}`}
+      className="relative flex flex-col bg-surface border border-border rounded-[20px] overflow-hidden text-ink no-underline h-[440px] max-md:h-[300px] transition-colors hover:border-primary focus-within:border-primary active:border-primary"
+    >
       {onWish && !minimal && (
         <button
           className={`absolute top-2 right-2 z-[1] bg-surface border rounded-full w-[1.9rem] h-[1.9rem] inline-flex items-center justify-center cursor-pointer ${
@@ -48,7 +51,7 @@ export function ProductCard({ product, onAdd, wishlisted, onWish, minimal = fals
           <Heart className="w-4 h-4" />
         </button>
       )}
-      <Link to={`/produk/${product._id || product.id}`} className="relative block">
+      <div className="relative block">
         {pct > 0 && (
           <span className="absolute top-0 left-0 bg-danger text-surface text-[0.8rem] font-extrabold px-[0.7rem] py-1 rounded-br-xl z-[1]">
             {pct}%
@@ -61,18 +64,25 @@ export function ProductCard({ product, onAdd, wishlisted, onWish, minimal = fals
             {product.category}
           </div>
         )}
-      </Link>
-      <div className="px-4 pt-[0.9rem] pb-[1.1rem] flex flex-col gap-[0.3rem] flex-1 max-md:px-[0.8rem] max-md:pt-[0.7rem] max-md:pb-[0.9rem]">
-        <div className="text-[0.72rem] font-extrabold text-primary uppercase tracking-[0.05em]">{product.category}</div>
-        <Link to={`/produk/${product._id || product.id}`} className="font-bold no-underline text-ink max-md:text-[0.85rem]">
+      </div>
+      <div className="px-4 pt-[0.9rem] pb-[1.1rem] flex flex-col gap-[0.1rem] flex-1 leading-tight max-md:px-[0.8rem] max-md:pt-[0.7rem] max-md:pb-[0.9rem]">
+        <div className="text-[0.72rem] font-extrabold text-primary uppercase tracking-[0.05em]">
+          {product.brand} • {product.category}
+        </div>
+        <span className="font-bold text-ink line-clamp-2 max-md:text-[0.85rem]">
           {product.name}
-        </Link>
-        <div className="flex gap-2 items-baseline flex-wrap">
+        </span>
+        <div className="flex gap-2 items-center flex-wrap">
           {pct > 0 && <span className="line-through text-muted text-[0.85rem]">{formatIDR(product.price)}</span>}
           <strong>{formatIDR(effectivePrice(product))}</strong>
         </div>
+        {stock !== undefined && stock !== null && (
+          <p className={`m-0 text-[0.78rem] font-semibold ${stock <= 0 ? 'text-danger' : stock < 5 ? 'text-warning' : 'text-muted'}`}>
+            {stock <= 0 ? 'Stok habis' : stock < 5 ? `Stok kritis • sisa ${stock}` : `Stok ${stock}`}
+          </p>
+        )}
         {!minimal && (
-          <dl className="my-[0.4rem] text-[0.78rem] max-md:hidden">
+          <dl className="my-[0.15rem] text-[0.78rem] max-md:hidden">
             {specRows(product).map((s) => (
               <div key={s.label} className="flex justify-between gap-2 py-[0.1rem]">
                 <dt className="text-muted">{s.label}</dt>
@@ -81,12 +91,7 @@ export function ProductCard({ product, onAdd, wishlisted, onWish, minimal = fals
             ))}
           </dl>
         )}
-        {onAdd && !minimal && (
-          <button className={btnClasses('primary', null, 'w-full mt-auto text-[0.8rem] px-4 py-[0.6rem]')} onClick={() => onAdd(product)}>
-            <Plus className="w-4 h-4" /> TAMBAH KE KERANJANG
-          </button>
-        )}
       </div>
-    </div>
+    </Link>
   );
 }

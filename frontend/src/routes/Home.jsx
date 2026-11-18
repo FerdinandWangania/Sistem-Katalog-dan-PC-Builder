@@ -1,20 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   Check,
-  Cpu,
-  House,
-  LayoutGrid,
-  Plus,
-  Search,
-  SlidersHorizontal,
-  User,
 } from 'lucide-react';
 import { api, ownerParams } from '../lib/api.js';
 import { get as getData } from '../lib/data.js';
 import { discountPercent, formatIDR, isExternal, promoLink } from '../lib/catalog.js';
 import { ProductCard } from '../components/ProductCard.jsx';
+import { SearchBar } from '../components/SearchBar.jsx';
 import { EmptyState, ErrorState, Skeleton } from '../components/States.jsx';
 import { Shell } from '../components/Layout.jsx';
 import { ToastProvider, useToast } from '../components/Toast.jsx';
@@ -74,57 +68,6 @@ function loadList(key) {
   }
 }
 
-function MobileSearch() {
-  const navigate = useNavigate();
-  const [q, setQ] = useState('');
-  const [recent, setRecent] = useState(loadList(RECENT_KEY));
-  const submit = (value) => {
-    const v = (value ?? q).trim();
-    if (!v) return;
-    const next = [v, ...recent.filter((r) => r !== v)].slice(0, 5);
-    setRecent(next);
-    try {
-      localStorage.setItem(RECENT_KEY, JSON.stringify(next));
-    } catch {
-      // abaikan bila storage tidak tersedia
-    }
-    navigate(`/katalog?q=${encodeURIComponent(v)}`);
-  };
-  return (
-    <div className="hidden max-md:block max-md:mb-5">
-      <div className="flex items-center gap-[0.6rem] bg-surface border border-border rounded-full px-4 py-[0.6rem] text-muted">
-        <Search className="w-5 h-5" />
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') submit();
-          }}
-          placeholder="Search for products, brands..."
-          aria-label="Cari produk"
-          className="flex-1 border-0 outline-none bg-transparent text-[0.9rem] text-ink"
-        />
-        <Link to="/katalog" aria-label="Filter katalog" className="text-muted inline-flex">
-          <SlidersHorizontal className="w-5 h-5" />
-        </Link>
-      </div>
-      {recent.length > 0 && (
-        <div className="flex gap-[0.4rem] flex-wrap mt-[0.6rem]">
-          {recent.map((r) => (
-            <button
-              key={r}
-              onClick={() => submit(r)}
-              className="bg-subtle border-0 rounded-full px-[0.8rem] py-[0.35rem] text-[0.8rem] text-secondary"
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function MobileFeatured({ products, wishlist, onWish, onAdd }) {
   if (!products?.length) return null;
   // No own heading: reuses the PRODUK POPULER heading + chips above (one section).
@@ -149,33 +92,6 @@ function MobileFeatured({ products, wishlist, onWish, onAdd }) {
   );
 }
 
-function MobileBottomNav() {
-  const { pathname } = useLocation();
-  // Semua menu navbar pindah ke bawah, kecuali keranjang (tetap di atas).
-  const items = [
-    { to: '/', label: 'Home', icon: House },
-    { to: '/katalog', label: 'Katalog', icon: LayoutGrid },
-    { to: '/builder', label: 'Builder', icon: Cpu },
-    { to: '/login', label: 'Account', icon: User },
-  ];
-  return (
-    <nav className="hidden max-md:flex fixed left-0 right-0 bottom-0 z-[60] bg-surface border-t border-border px-4 pt-[0.6rem] pb-[calc(0.6rem+env(safe-area-inset-bottom))]">
-      {items.map((it) => (
-        <Link
-          key={it.to}
-          to={it.to}
-          className={`flex-1 flex flex-col items-center gap-[0.15rem] no-underline text-[0.7rem] font-semibold ${
-            pathname === it.to ? 'text-primary' : 'text-muted'
-          }`}
-        >
-          <it.icon className="w-5 h-5" />
-          {it.label}
-        </Link>
-      ))}
-    </nav>
-  );
-}
-
 function HomeInner() {
   const toast = useToast();
   const [promos, setPromos] = useState(null);
@@ -183,6 +99,21 @@ function HomeInner() {
   const [packages, setPackages] = useState(null);
   const [error, setError] = useState(null);
   const [wishlist, setWishlist] = useState(loadList(WISH_KEY));
+  const navigate = useNavigate();
+  const [searchInput, setSearchInput] = useState('');
+  const [recent, setRecent] = useState(loadList(RECENT_KEY));
+  const submitSearch = (value) => {
+    const v = (value ?? searchInput).trim();
+    if (!v) return;
+    const next = [v, ...recent.filter((r) => r !== v)].slice(0, 5);
+    setRecent(next);
+    try {
+      localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+    } catch {
+      // abaikan bila storage tidak tersedia
+    }
+    navigate(`/katalog?q=${encodeURIComponent(v)}`);
+  };
 
   useEffect(() => {
     let alive = true;
@@ -217,15 +148,6 @@ function HomeInner() {
     }
   };
 
-  const addPackage = async (pkg) => {
-    try {
-      await api.post(`/packages/${pkg._id || pkg.id}/add-to-cart`, { body: { ...ownerParams() } });
-      toast.success(`${pkg.name} masuk keranjang.`);
-    } catch (e) {
-      toast.error(e.message || 'Gagal menambah paket.');
-    }
-  };
-
   const toggleWish = (id) => {
     const next = wishlist.includes(id) ? wishlist.filter((w) => w !== id) : [...wishlist, id];
     setWishlist(next);
@@ -244,7 +166,16 @@ function HomeInner() {
   return (
     <div className="max-w-[1200px] mx-auto p-6 max-md:p-4 max-md:pb-20">
       {/* Mobile-first blocks (hidden on desktop) */}
-      <MobileSearch />
+      <div className="hidden max-md:block max-md:mb-5">
+        <SearchBar
+          value={searchInput}
+          onChange={setSearchInput}
+          onSubmit={submitSearch}
+          onFilterClick={() => navigate('/katalog')}
+          recent={recent}
+          onRecentSelect={submitSearch}
+        />
+      </div>
       {error ? (
         <ErrorState message={error.message} onRetry={() => window.location.reload()} />
       ) : loading ? (
@@ -262,13 +193,13 @@ function HomeInner() {
         ) : packages.length === 0 ? (
           <EmptyState title="Belum ada paket rakitan" />
         ) : (
-          <div className="grid grid-cols-3 gap-4 max-w-[1000px] mx-auto mt-5 max-[900px]:flex max-[900px]:gap-3 max-[900px]:overflow-x-auto max-[900px]:pb-2 max-[900px]:max-w-none max-[900px]:-mx-4 max-[900px]:px-4">
+          <div className="grid grid-cols-3 gap-4 max-w-[1000px] mx-auto mt-5 max-[900px]:flex max-[900px]:gap-3 max-[900px]:overflow-x-auto max-[900px]:overscroll-x-contain max-[900px]:snap-x max-[900px]:touch-pan-x max-[900px]:pb-2 max-[900px]:max-w-none max-[900px]:-mx-4 max-[900px]:px-4">
             {packages.slice(0, 3).map((pkg) => {
               const img = pkg.items?.[0]?.product?.image;
               return (
                 <div
                   key={pkg._id || pkg.id}
-                  className="bg-surface border border-border rounded-[20px] overflow-hidden flex flex-col max-[900px]:flex-[0_0_16rem]"
+                  className="bg-surface border border-border rounded-[20px] overflow-hidden flex flex-col max-[900px]:flex-[0_0_16rem] max-[900px]:snap-start transition-colors hover:border-primary active:border-primary"
                 >
                   {img ? (
                     <img src={img} alt={pkg.name} loading="lazy" className="w-full aspect-[4/3] object-cover block bg-subtle" />
@@ -290,9 +221,6 @@ function HomeInner() {
                         </li>
                       ))}
                     </ul>
-                    <button className={btnClasses('primary', null, 'w-full mt-auto text-[0.8rem] px-4 py-[0.6rem]')} onClick={() => addPackage(pkg)}>
-                      <Plus className="w-4 h-4" /> TAMBAH KE KERANJANG
-                    </button>
                   </div>
                 </div>
               );
@@ -327,8 +255,6 @@ function HomeInner() {
         )}
         </div>
       </section>
-
-      <MobileBottomNav />
     </div>
   );
 }
