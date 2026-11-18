@@ -25,7 +25,7 @@ export function ErrorState({ message = 'Terjadi kesalahan.', onRetry }) {
 export function Skeleton({ width = '100%', height = '1rem' }) {
   return (
     <div
-      className="rounded-xl min-h-4 animate-[bw-shimmer_1.2s_infinite] bg-[linear-gradient(90deg,var(--color-subtle)_25%,var(--color-border)_50%,var(--color-subtle)_75%)] bg-[length:200%_100%]"
+      className="rounded-xl min-h-4 animate-[bw-shimmer_1.2s_infinite] bg-[linear-gradient(90deg,var(--color-subtle)_25%,var(--color-border)_50%,var(--color-subtle)_75%)] bg-size-[200%-100%]"
       style={{ width, height }}
     />
   );
