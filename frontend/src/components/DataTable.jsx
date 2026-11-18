@@ -1,25 +1,38 @@
 import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
-import './ui.css';
 
 // columns: [{ key, label, render?: (row) => node }]
 // pagination: { page (1-based), pageSize, total, onPage } — omit for no pagination
+// builderCards: mobile turns the table into per-slot cards (PRD NFR-005)
 export function DataTable({ columns = [], rows = [], pagination, builderCards = false }) {
   return (
     <div>
-      <div className="bw-table-wrap">
-        <table className={`bw-table${builderCards ? ' bw-table-builder' : ''}`}>
+      <div className="overflow-x-auto rounded-2xl border border-border">
+        <table
+          className={`w-full border-collapse bg-surface text-[0.9rem] ${
+            builderCards
+              ? 'max-md:[&>thead]:hidden max-md:[&_tbody]:block max-md:[&_tr]:block max-md:[&_tr]:w-full max-md:[&_tr]:rounded-2xl max-md:[&_tr]:border max-md:[&_tr]:border-border max-md:[&_tr]:bg-surface max-md:[&_tr]:mb-3 max-md:[&_td]:block max-md:[&_td]:w-full max-md:[&_td]:border-0'
+              : ''
+          }`}
+        >
           <thead>
             <tr>
               {columns.map((c) => (
-                <th key={c.key}>{c.label}</th>
+                <th
+                  key={c.key}
+                  className="bg-ink text-surface text-left px-4 py-3 text-[0.75rem] uppercase tracking-[0.05em] whitespace-nowrap"
+                >
+                  {c.label}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((row, i) => (
-              <tr key={row._id || row.id || i}>
+              <tr key={row._id || row.id || i} className="even:[&>td]:bg-subtle">
                 {columns.map((c) => (
-                  <td key={c.key}>{c.render ? c.render(row) : row[c.key]}</td>
+                  <td key={c.key} className="px-4 py-3 border-t border-border text-ink">
+                    {c.render ? c.render(row) : row[c.key]}
+                  </td>
                 ))}
               </tr>
             ))}
@@ -31,11 +44,10 @@ export function DataTable({ columns = [], rows = [], pagination, builderCards = 
   );
 }
 
-// Numbered pagination with ellipsis (first/prev/numbers/next/last), like the design reference
+// First/prev/numbered/next/last with ellipsis, max 5 slots
 export function Pagination({ page = 1, pageSize = 10, total = 0, onPage }) {
   const pages = Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
   if (pages <= 1 || !onPage) return null;
-  // Compact window, max 5 slots: 1 … current … last
   let nums;
   if (pages <= 5) {
     nums = Array.from({ length: pages }, (_, i) => i + 1);
@@ -55,7 +67,7 @@ export function Pagination({ page = 1, pageSize = 10, total = 0, onPage }) {
   const btn = (Icon, target, disabled, aria) => (
     <button
       key={aria}
-      className="bw-page-btn"
+      className="min-w-[2.2rem] h-[2.2rem] px-2 border border-border rounded-lg bg-surface text-ink font-semibold cursor-pointer inline-flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed hover:bg-subtle"
       disabled={disabled}
       onClick={() => onPage(target)}
       aria-label={aria}
@@ -64,18 +76,20 @@ export function Pagination({ page = 1, pageSize = 10, total = 0, onPage }) {
     </button>
   );
   return (
-    <div className="bw-pagination">
+    <div className="flex gap-[0.35rem] items-center justify-center mt-3">
       {btn(ChevronsLeft, 1, page <= 1, 'Halaman pertama')}
       {btn(ChevronLeft, page - 1, page <= 1, 'Sebelumnya')}
       {items.map((n, i) =>
         n === '…' ? (
-          <span key={`gap${i}`} className="bw-page-gap">
+          <span key={`gap${i}`} className="text-muted px-1">
             …
           </span>
         ) : (
           <button
             key={n}
-            className={`bw-page-btn${n === page ? ' active' : ''}`}
+            className={`min-w-[2.2rem] h-[2.2rem] px-2 border rounded-lg font-semibold cursor-pointer inline-flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed ${
+              n === page ? 'bg-ink text-surface border-ink' : 'border-border bg-surface text-ink hover:bg-subtle'
+            }`}
             onClick={() => onPage(n)}
             aria-current={n === page ? 'page' : undefined}
           >

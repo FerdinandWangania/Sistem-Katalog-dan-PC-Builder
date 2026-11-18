@@ -16,7 +16,7 @@ const ROWS = [
 function ToastDemo() {
   const toast = useToast();
   return (
-    <div className="row">
+    <div className="flex gap-3 flex-wrap items-center">
       <Button size="sm" onClick={() => toast.success('Berhasil disimpan.')}>
         Toast sukses
       </Button>
@@ -34,12 +34,12 @@ export default function UiPreview() {
   return (
     <ToastProvider>
       <Shell>
-        <div className="bw-preview">
+        <div className="max-w-[1000px] mx-auto px-6 py-8">
           <h1>UI Preview (khusus development)</h1>
 
-          <section>
-            <h2>Button</h2>
-            <div className="row">
+          <section className="mb-10">
+            <h2 className="text-ink border-b-2 border-border pb-2">Button</h2>
+            <div className="flex gap-3 flex-wrap items-center">
               <Button>Primer</Button>
               <Button variant="secondary">Sekunder</Button>
               <Button variant="cta">CTA Ungu</Button>
@@ -47,9 +47,9 @@ export default function UiPreview() {
             </div>
           </section>
 
-          <section>
-            <h2>Badge status</h2>
-            <div className="row">
+          <section className="mb-10">
+            <h2 className="text-ink border-b-2 border-border pb-2">Badge status</h2>
+            <div className="flex gap-3 flex-wrap items-center">
               <Badge status="pending">pending</Badge>
               <Badge status="success">processing</Badge>
               <Badge status="failed">cancelled</Badge>
@@ -57,9 +57,9 @@ export default function UiPreview() {
             </div>
           </section>
 
-          <section>
-            <h2>Modal &amp; Toast</h2>
-            <div className="row">
+          <section className="mb-10">
+            <h2 className="text-ink border-b-2 border-border pb-2">Modal &amp; Toast</h2>
+            <div className="flex gap-3 flex-wrap items-center">
               <Button variant="secondary" onClick={() => setModal(true)}>
                 Buka modal
               </Button>
@@ -70,8 +70,8 @@ export default function UiPreview() {
             </Modal>
           </section>
 
-          <section>
-            <h2>Accordion</h2>
+          <section className="mb-10">
+            <h2 className="text-ink border-b-2 border-border pb-2">Accordion</h2>
             <Accordion
               items={[
                 { title: 'Rakitan #1 — 7 komponen', content: 'Isi rakitan tampil di sini.' },
@@ -80,8 +80,8 @@ export default function UiPreview() {
             />
           </section>
 
-          <section>
-            <h2>Table + Pagination</h2>
+          <section className="mb-10">
+            <h2 className="text-ink border-b-2 border-border pb-2">Table + Pagination</h2>
             <DataTable
               columns={[
                 { key: 'name', label: 'Nama' },
@@ -105,8 +105,8 @@ export default function UiPreview() {
             />
           </section>
 
-          <section>
-            <h2>States</h2>
+          <section className="mb-10">
+            <h2 className="text-ink border-b-2 border-border pb-2">States</h2>
             <EmptyState title="Keranjang kosong" />
             <ErrorState message="Gagal memuat." onRetry={() => {}} />
             <Skeleton />

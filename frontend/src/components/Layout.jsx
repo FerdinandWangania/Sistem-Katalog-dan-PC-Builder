@@ -1,27 +1,33 @@
 import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
-import './ui.css';
+import { btnClasses } from './Button.jsx';
 
 export function Navbar() {
   return (
-    <nav className="bw-navbar bw-navbar-light">
-      <Link to="/" className="bw-navbar-brand">
-        <span className="bw-logo-mark">✕</span> BUILDWISE
+    <nav className="flex items-center justify-between gap-4 px-6 py-3 bg-surface text-ink border-b border-border sticky top-0 z-50">
+      <Link to="/" className="font-black tracking-[0.1em] inline-flex items-center gap-[0.4rem] no-underline font-bold">
+        <span className="bg-ink text-surface rounded-md px-[0.3rem] text-[0.9em]">✕</span> BUILDWISE
       </Link>
-      <div className="bw-navbar-links">
-        <Link to="/">Home</Link>
-        <Link to="/katalog">Katalog</Link>
+      <div className="hidden md:flex gap-5">
+        <Link to="/" className="no-underline font-semibold text-ink">
+          Home
+        </Link>
+        <Link to="/katalog" className="no-underline font-semibold text-ink">
+          Katalog
+        </Link>
       </div>
-      <div className="bw-navbar-actions">
-        <Link to="/keranjang" className="bw-cart-link" aria-label="Keranjang">
+      <div className="flex gap-[0.6rem] items-center">
+        <Link to="/keranjang" className="inline-flex items-center text-ink" aria-label="Keranjang">
           <ShoppingCart className="w-5 h-5" />
         </Link>
-        <Link to="/builder" className="bw-btn bw-btn-primary bw-btn-sm bw-navbar-cta">
-          PC Builder
-        </Link>
-        <Link to="/login" className="bw-btn bw-btn-cta bw-btn-sm bw-navbar-cta">
-          Log in
-        </Link>
+        <span className="hidden md:flex md:items-center md:gap-[0.6rem]">
+          <Link to="/builder" className={btnClasses('primary', 'sm')}>
+            PC Builder
+          </Link>
+          <Link to="/login" className={btnClasses('cta', 'sm')}>
+            Log in
+          </Link>
+        </span>
       </div>
     </nav>
   );
@@ -29,36 +35,59 @@ export function Navbar() {
 
 export function Footer() {
   return (
-    <footer className="bw-footer-panel">
-      <div className="bw-footer-grid">
+    <footer className="max-w-[1200px] mx-auto mt-12 mb-6 bg-ink text-surface rounded-[28px] px-10 pt-10 pb-5 max-md:hidden">
+      <div className="grid gap-8 grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <div className="bw-navbar-brand">✕ BUILDWISE</div>
-          <p>Platform PC Builder & e-Commerce komponen hardware terdepan. Kustomisasi PC impian Anda dengan cek kompatibilitas real-time.</p>
+          <div className="font-black tracking-[0.1em] inline-flex items-center gap-[0.4rem] font-bold">
+            ✕ BUILDWISE
+          </div>
+          <p className="block text-muted text-[0.85rem] mt-[0.6rem]">
+            Platform PC Builder & e-Commerce komponen hardware terdepan. Kustomisasi PC impian Anda dengan cek
+            kompatibilitas real-time.
+          </p>
         </div>
         <div>
-          <strong>NAVIGASI</strong>
-          <Link to="/">Beranda</Link>
-          <Link to="/builder">PC Builder</Link>
-          <Link to="/katalog">Katalog Produk</Link>
-          <Link to="/promo">Promo Spesial</Link>
+          <strong className="text-[0.8rem] tracking-[0.08em]">NAVIGASI</strong>
+          <Link to="/" className="block text-muted text-[0.85rem] no-underline mt-[0.6rem]">
+            Beranda
+          </Link>
+          <Link to="/builder" className="block text-muted text-[0.85rem] no-underline mt-[0.6rem]">
+            PC Builder
+          </Link>
+          <Link to="/katalog" className="block text-muted text-[0.85rem] no-underline mt-[0.6rem]">
+            Katalog Produk
+          </Link>
+          <Link to="/promo" className="block text-muted text-[0.85rem] no-underline mt-[0.6rem]">
+            Promo Spesial
+          </Link>
         </div>
         <div>
-          <strong>KATEGORI</strong>
-          <Link to="/katalog?category=CPU">CPU (CPU)</Link>
-          <Link to="/katalog?category=Motherboard">Motherboard</Link>
-          <Link to="/katalog?category=GPU">Graphics Card (GPU)</Link>
-          <Link to="/katalog?category=RAM">Memory (RAM)</Link>
-          <Link to="/katalog?category=SSD">Storage (SSD)</Link>
+          <strong className="text-[0.8rem] tracking-[0.08em]">KATEGORI</strong>
+          <Link to="/katalog?category=CPU" className="block text-muted text-[0.85rem] no-underline mt-[0.6rem]">
+            CPU (CPU)
+          </Link>
+          <Link to="/katalog?category=Motherboard" className="block text-muted text-[0.85rem] no-underline mt-[0.6rem]">
+            Motherboard
+          </Link>
+          <Link to="/katalog?category=GPU" className="block text-muted text-[0.85rem] no-underline mt-[0.6rem]">
+            Graphics Card (GPU)
+          </Link>
+          <Link to="/katalog?category=RAM" className="block text-muted text-[0.85rem] no-underline mt-[0.6rem]">
+            Memory (RAM)
+          </Link>
+          <Link to="/katalog?category=SSD" className="block text-muted text-[0.85rem] no-underline mt-[0.6rem]">
+            Storage (SSD)
+          </Link>
         </div>
         <div>
-          <strong>LAYANAN</strong>
-          <span>Cek Garansi</span>
-          <span>Panduan Rakit PC</span>
-          <span>Kebijakan Retur</span>
-          <span>Hubungi Konsultan</span>
+          <strong className="text-[0.8rem] tracking-[0.08em]">LAYANAN</strong>
+          <span className="block text-muted text-[0.85rem] mt-[0.6rem]">Cek Garansi</span>
+          <span className="block text-muted text-[0.85rem] mt-[0.6rem]">Panduan Rakit PC</span>
+          <span className="block text-muted text-[0.85rem] mt-[0.6rem]">Kebijakan Retur</span>
+          <span className="block text-muted text-[0.85rem] mt-[0.6rem]">Hubungi Konsultan</span>
         </div>
       </div>
-      <div className="bw-footer-bottom">
+      <div className="flex justify-between flex-wrap gap-2 border-t border-white/15 mt-6 pt-4 text-[0.75rem] text-muted">
         <span>© 2026 BuildWise PC Builder. Hak Cipta Dilindungi Undang-Undang.</span>
         <span>Syarat & Ketentuan&nbsp;&nbsp;&nbsp;Kebijakan Privasi</span>
       </div>

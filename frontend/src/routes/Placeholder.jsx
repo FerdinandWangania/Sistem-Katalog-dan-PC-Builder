@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 export default function Placeholder({ title }) {
   const params = useParams();
   return (
-    <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
+    <main className="p-8">
       <h1>{title}</h1>
       <p>
         Rute kerangka FE-01 — layar asli menyusul di task berikutnya.
