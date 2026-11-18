@@ -19,6 +19,11 @@ const SPEC_LABELS = {
 const SPEC_ORDER = ['socket', 'cores', 'base_clock', 'form_factor', 'chipset', 'type', 'capacity', 'speed', 'wattage_w', 'tdp', 'length'];
 
 function prettyLabel(key) {
+  return specLabel(key);
+}
+
+// Label spek untuk tabel penuh (diekspor agar halaman detail konsisten).
+export function specLabel(key) {
   if (SPEC_LABELS[key]) return SPEC_LABELS[key];
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }

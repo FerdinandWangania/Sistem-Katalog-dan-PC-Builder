@@ -2,8 +2,10 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 import { btnClasses } from './Button.jsx';
 import { MobileBottomNav } from './MobileBottomNav.jsx';
+import { useCartCount } from '../lib/cart.js';
 
 export function Navbar() {
+  const cartCount = useCartCount();
   return (
     <nav className="flex items-center justify-between gap-4 px-6 py-3 bg-surface text-ink border-b border-border sticky top-0 z-50">
       <Link to="/" className="font-black tracking-[0.1em] inline-flex items-center gap-[0.4rem] no-underline font-bold">
@@ -18,8 +20,13 @@ export function Navbar() {
         </Link>
       </div>
       <div className="flex gap-[0.6rem] items-center">
-        <Link to="/keranjang" className="inline-flex items-center text-ink" aria-label="Keranjang">
+        <Link to="/keranjang" className="relative inline-flex items-center text-ink" aria-label="Keranjang">
           <ShoppingCart className="w-5 h-5" />
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-danger text-surface text-[0.65rem] font-bold rounded-full min-w-[1.1rem] h-[1.1rem] px-1 inline-flex items-center justify-center">
+              {cartCount > 99 ? '99+' : cartCount}
+            </span>
+          )}
         </Link>
         <span className="hidden md:flex md:items-center md:gap-[0.6rem]">
           <Link to="/builder" className={btnClasses('primary', 'sm')}>
