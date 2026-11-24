@@ -103,12 +103,12 @@ export function Footer() {
   );
 }
 
-export function Shell({ children, hideFooter = false }) {
+export function Shell({ children, hideFooter = false, hideBottomNav = false }) {
   return (
     <>
       <Navbar />
       {children}
-      <MobileBottomNav />
+      {!hideBottomNav && <MobileBottomNav />}
       {!hideFooter && <Footer />}
     </>
   );

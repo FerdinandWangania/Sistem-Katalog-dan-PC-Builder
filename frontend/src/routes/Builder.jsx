@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
   ChevronLeft,
@@ -19,6 +19,7 @@ import {
   Monitor,
   Mouse,
   Network,
+  Pencil,
   Plug,
   Plus,
   RotateCcw,
@@ -30,8 +31,9 @@ import {
   Video,
   Zap,
 } from 'lucide-react';
-import { get as getData, shouldMock } from '../lib/data.js';
-import { api } from '../lib/api.js';
+import { get as getData, mockEnabled, shouldMock } from '../lib/data.js';
+import { api, ownerParams } from '../lib/api.js';
+import { getCart } from '../lib/cart.js';
 import { effectivePrice, formatIDR } from '../lib/catalog.js';
 import { specRows } from '../components/ProductCard.jsx';
 import { Shell } from '../components/Layout.jsx';
@@ -487,6 +489,7 @@ function CompatOptionModal({ mode, brandFilter, onPick, onClose }) {
 
 function BuilderInner() {
   const toast = useToast();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [persisted] = useState(loadPersisted);
   const [sel, setSel] = useState(persisted.sel);
@@ -496,6 +499,9 @@ function BuilderInner() {
   const [socketFilter, setSocketFilter] = useState(persisted.socketFilter || '');
   const [qty, setQty] = useState(persisted.qty || {});
   const [compatModal, setCompatModal] = useState(null); // 'brand' | 'socket' | null
+  // Mode edit rakitan dari keranjang (FE-07): ?edit_build={build_id}.
+  const editBuildId = searchParams.get('edit_build');
+  const [editLoaded, setEditLoaded] = useState(false);
   const [ignorePsu, setIgnorePsu] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [validating, setValidating] = useState(false);
@@ -542,6 +548,49 @@ function BuilderInner() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, brandFilter, socketFilter]);
+
+  // Mode edit: prefill 7 slot + ekstra dari isi rakitan di keranjang.
+  useEffect(() => {
+    if (!editBuildId || editLoaded) return;
+    let alive = true;
+    (async () => {
+      try {
+        const res = await getCart();
+        const build = [...(res.data?.builder_builds || [])].find((b) => String(b.build_id) === String(editBuildId));
+        if (!alive) return;
+        if (!build) {
+          toast.error('Rakitan tidak ditemukan di keranjang.');
+        } else {
+          const nextSel = {};
+          const nextQty = {};
+          for (const item of build.components || []) {
+            const p = item.product;
+            if (!p) continue;
+            const row = ALL_ROWS.find((r) => r.category === p.category);
+            if (!row) continue;
+            nextSel[row.key] = p;
+            if (Number(item.qty) > 1) nextQty[row.key] = Number(item.qty);
+          }
+          setSel(nextSel);
+          setQty(nextQty);
+          if (build.build_name) {
+            setBuildName(String(build.build_name).slice(0, 60));
+            setNameTouched(true);
+          }
+          const cpu = (build.components || []).map((i) => i.product).find((p) => p?.category === 'CPU');
+          if (cpu?.brand) setBrandFilter(cpu.brand);
+          if (cpu?.specs?.socket) setSocketFilter(cpu.specs.socket);
+        }
+      } catch (e) {
+        if (alive) toast.error(e.message || 'Gagal memuat rakitan.');
+      } finally {
+        if (alive) setEditLoaded(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [editBuildId, editLoaded, toast]);
 
   // Persistensi lokal agar bolak-balik ke detail produk tidak menghilangkan rakitan.
   useEffect(() => {
@@ -667,6 +716,26 @@ function BuilderInner() {
     setCompatModal(null);
   };
 
+  // Simpan atomik pengganti rakitan (PUT /builder/builds/{id}, revalidasi backend).
+  const saveEdit = async () => {
+    if (!editBuildId) return;
+    try {
+      await api.put(`/builder/builds/${editBuildId}`, {
+        query: ownerParams(),
+        body: { ...JSON.parse(payloadKey), build_name: buildName.slice(0, 60), ignore_psu_warning: ignorePsu },
+      });
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // abaikan
+      }
+      toast.success('Rakitan berhasil diperbarui.');
+      navigate('/keranjang');
+    } catch (e) {
+      toast.error(e.payload?.message || e.message || 'Gagal menyimpan perubahan.');
+    }
+  };
+
   const detailHref = (key) => {
     const p = sel[key];
     if (!p) return '#';
@@ -691,6 +760,17 @@ function BuilderInner() {
       </div>
 
       {/* Nama rakitan: prefill CPU, maks 60 karakter, ikut dikirim ke validate */}
+      {editBuildId && (
+        <div className="flex items-center gap-2 bg-info/10 border border-info/30 rounded-2xl px-4 py-3 mb-5 text-[0.85rem] text-ink" role="status">
+          <Pencil className="w-4 h-4 shrink-0" />
+          <span className="flex-1">
+            <strong>Mode edit rakitan.</strong> Ubah komponen, lalu simpan — perubahan mengganti rakitan utuh setelah revalidasi.
+          </span>
+          <button className={btnClasses('secondary', 'sm')} onClick={() => navigate('/keranjang')}>
+            Batal
+          </button>
+        </div>
+      )}
       <section className="bg-surface border border-border rounded-2xl px-5 py-4 mb-5">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
@@ -973,14 +1053,25 @@ function BuilderInner() {
         </button>
         <div className="ml-auto flex items-center gap-3 max-md:ml-0 max-md:basis-full max-md:justify-between">
           <strong className="text-accent text-[1.2rem] whitespace-nowrap">{formatIDR(total)}</strong>
-          <button
-            className={btnClasses('primary', null, 'tracking-[0.06em] max-md:flex-1 max-md:justify-center')}
-            disabled={!canContinue}
-            title={canContinue ? 'Lanjut ke pembayaran' : 'Lengkapi 7 slot utama dan perbaiki error kompatibilitas'}
-            onClick={() => toast.success('Rakitan kompatibel. Simpan ke keranjang hadir di FE-07.')}
-          >
-            LANJUT PEMBAYARAN
-          </button>
+          {editBuildId ? (
+            <button
+              className={btnClasses('primary', null, 'tracking-[0.06em] max-md:flex-1 max-md:justify-center')}
+              disabled={!canContinue}
+              title={canContinue ? 'Simpan perubahan rakitan' : 'Perbaiki error kompatibilitas dulu'}
+              onClick={saveEdit}
+            >
+              SIMPAN PERUBAHAN
+            </button>
+          ) : (
+            <button
+              className={btnClasses('primary', null, 'tracking-[0.06em] max-md:flex-1 max-md:justify-center')}
+              disabled={!canContinue}
+              title={canContinue ? 'Lanjut ke pembayaran' : 'Lengkapi 7 slot utama dan perbaiki error kompatibilitas'}
+              onClick={() => toast.success('Rakitan kompatibel. Simpan ke keranjang hadir di FE-07.')}
+            >
+              LANJUT PEMBAYARAN
+            </button>
+          )}
         </div>
       </section>
 
