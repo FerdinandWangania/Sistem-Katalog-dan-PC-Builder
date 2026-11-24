@@ -20,7 +20,7 @@ export function Modal({ open, title, children, footer, onClose }) {
       aria-modal="true"
     >
       <div
-        className="bg-surface rounded-[20px] max-w-[560px] w-full max-h-[90vh] overflow-auto p-6"
+        className="bg-surface rounded-[20px] max-w-[560px] w-full max-h-[90vh] overflow-auto p-6 max-md:p-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">

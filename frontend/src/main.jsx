@@ -7,6 +7,7 @@ import UiPreview from './routes/UiPreview.jsx';
 import Home from './routes/Home.jsx';
 import Katalog from './routes/Katalog.jsx';
 import DetailProduk from './routes/DetailProduk.jsx';
+import Builder from './routes/Builder.jsx';
 
 const page = (title) => <Placeholder title={title} />;
 
@@ -14,7 +15,7 @@ const router = createBrowserRouter([
   { path: '/', element: <Home /> },
   { path: '/katalog', element: <Katalog /> },
   { path: '/produk/:id', element: <DetailProduk /> },
-  { path: '/builder', element: page('PC Builder') },
+  { path: '/builder', element: <Builder /> },
   { path: '/keranjang', element: page('Keranjang') },
   { path: '/checkout', element: page('Checkout') },
   { path: '/login', element: page('Login') },
