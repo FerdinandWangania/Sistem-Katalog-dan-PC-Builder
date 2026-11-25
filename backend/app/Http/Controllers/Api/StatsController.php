@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\FinanceService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 /**
  * StatsController — ringkasan dashboard admin.
@@ -42,6 +45,34 @@ class StatsController extends Controller
                 ),
                 'revenue' => (float) Order::whereIn('status', $paidStatuses)->sum('total_amount'),
             ],
+        ]);
+    }
+
+    /**
+     * Produk terlaris pada periode (admin/keuangan).
+     * GET /api/admin/top-products?from=2026-11-01&to=2026-11-30&limit=10
+     */
+    public function topProducts(Request $request, FinanceService $financeService): JsonResponse
+    {
+        $validated = $request->validate([
+            'from' => ['sometimes', 'date'],
+            'to' => ['sometimes', 'date'],
+            'limit' => ['sometimes', 'integer', 'min:1', 'max:50'],
+        ]);
+
+        $from = Carbon::parse($validated['from'] ?? now()->startOfMonth()->toDateString())->startOfDay();
+        $to = Carbon::parse($validated['to'] ?? now()->toDateString())->endOfDay();
+
+        if ($to->lt($from)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Tanggal akhir harus setelah tanggal mulai',
+            ], 422);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $financeService->topProducts($from, $to, (int) ($validated['limit'] ?? 10)),
         ]);
     }
 }

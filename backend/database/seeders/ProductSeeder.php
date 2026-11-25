@@ -14,7 +14,7 @@ class ProductSeeder extends Seeder
         $products = [
             // CPU
             [
-                'category' => 'CPU',
+                'category' => 'cpu',
                 'brand' => 'Intel',
                 'name' => 'Intel Core i9-14900K',
                 'price' => 7500000,
@@ -31,7 +31,7 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'CPU',
+                'category' => 'cpu',
                 'brand' => 'AMD',
                 'name' => 'AMD Ryzen 9 7950X',
                 'price' => 8200000,
@@ -49,7 +49,7 @@ class ProductSeeder extends Seeder
             ],
             // GPU
             [
-                'category' => 'GPU',
+                'category' => 'gpu',
                 'brand' => 'NVIDIA',
                 'name' => 'NVIDIA RTX 4090 24GB',
                 'price' => 25000000,
@@ -65,7 +65,7 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'GPU',
+                'category' => 'gpu',
                 'brand' => 'AMD',
                 'name' => 'AMD RX 7900 XTX',
                 'price' => 14500000,
@@ -82,7 +82,7 @@ class ProductSeeder extends Seeder
             ],
             // RAM
             [
-                'category' => 'RAM',
+                'category' => 'ram',
                 'brand' => 'Corsair',
                 'name' => 'Corsair Vengeance 32GB DDR5-6000',
                 'price' => 1800000,
@@ -97,7 +97,7 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'RAM',
+                'category' => 'ram',
                 'brand' => 'G.Skill',
                 'name' => 'G.Skill Trident Z5 64GB DDR5-6400',
                 'price' => 3500000,
@@ -113,7 +113,7 @@ class ProductSeeder extends Seeder
             ],
             // SSD
             [
-                'category' => 'SSD',
+                'category' => 'ssd',
                 'brand' => 'Samsung',
                 'name' => 'Samsung 990 Pro 2TB NVMe',
                 'price' => 2200000,
@@ -130,7 +130,7 @@ class ProductSeeder extends Seeder
             ],
             // Motherboard
             [
-                'category' => 'Motherboard',
+                'category' => 'motherboard',
                 'brand' => 'ASUS',
                 'name' => 'ASUS ROG Maximus Z790 Hero',
                 'price' => 6800000,
@@ -147,7 +147,7 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'Motherboard',
+                'category' => 'motherboard',
                 'brand' => 'ASUS',
                 'name' => 'ASUS ROG Strix B650E-F Gaming WiFi',
                 'price' => 4500000,
@@ -165,7 +165,7 @@ class ProductSeeder extends Seeder
             ],
             // PSU
             [
-                'category' => 'PSU',
+                'category' => 'psu',
                 'brand' => 'Seasonic',
                 'name' => 'Seasonic FOCUS GX-1000W 80+ Gold',
                 'price' => 2500000,
@@ -181,7 +181,7 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'PSU',
+                'category' => 'psu',
                 'brand' => 'Corsair',
                 'name' => 'Corsair RM750e 750W 80+ Gold',
                 'price' => 1750000,
@@ -198,7 +198,7 @@ class ProductSeeder extends Seeder
             ],
             // Casing
             [
-                'category' => 'Case',
+                'category' => 'case',
                 'brand' => 'Lian Li',
                 'name' => 'Lian Li O11 Dynamic EVO',
                 'price' => 2100000,
@@ -213,7 +213,7 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'category' => 'Case',
+                'category' => 'case',
                 'brand' => 'NZXT',
                 'name' => 'NZXT H5 Flow RGB',
                 'price' => 1450000,
