@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
@@ -502,6 +502,7 @@ function BuilderInner() {
   // Mode edit rakitan dari keranjang (FE-07): ?edit_build={build_id}.
   const editBuildId = searchParams.get('edit_build');
   const [editLoaded, setEditLoaded] = useState(false);
+  const staleNotified = useRef(false);
   const [ignorePsu, setIgnorePsu] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [validating, setValidating] = useState(false);
@@ -661,7 +662,12 @@ function BuilderInner() {
               for (const [k] of hits) delete next[k];
               return next;
             });
-            toast.success(`${hits.length} pilihan lama tak tersedia di server, dibersihkan otomatis. Pilih ulang komponennya.`);
+            // Beri tahu sekali saja per sesi agar tidak mengganggu tiap pilih.
+            if (!staleNotified.current) {
+              staleNotified.current = true;
+              const names = hits.map(([k]) => ROW_BY_KEY[k]?.label || k).join(', ');
+              toast.success(`Pilihan lama (${names}) tak ada di server, dibersihkan. Pilih ulang komponennya.`);
+            }
           }
         }
       } catch (e) {
