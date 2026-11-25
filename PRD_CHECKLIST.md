@@ -95,7 +95,16 @@ Target: tiga laporan keuangan + export CSV sesuai FR-023.
 - [x] HPP tidak pernah tampil ke pembeli (`Product::$hidden` + `OrderItem::$hidden`) dan guard hapus produk 409 bila dirujuk paket/keranjang/pesanan aktif.
 - [x] Test P2: kategori/brand/produk, alamat/ulasan, promo & kode promo, checkout (QRIS/kartu kredit/alamat), Snap/callback/instruksi, log pembayaran/top products, expiry job.
 
-## P3 — Auth Lanjutan & Kebersihan
+## Data Katalog Real (25 Nov 2026)
+
+- [x] Impor 3.802 produk unik dari `BLESSING KOMPONEN ACC 06 NOVEMBER 2026 (2).xls`.
+- [x] 43 kategori terisi; 45 slug kategori tersedia (termasuk `sound_card` dan `capture_card`).
+- [x] 230 brand unik dari dataset; total koleksi brand 238.
+- [x] Spesifikasi dasar diekstrak dari nama/subkategori: socket, chipset, tipe RAM, kapasitas, wattage PSU, form factor, VRAM, ukuran/refresh monitor.
+- [x] Katalog dummy 40 produk dan 2 paket prebuilt diganti; paket prebuilt perlu di-seed ulang bila diperlukan.
+- [ ] Promo demo P2 (`Promo Harbolnas NVIDIA`, `Diskon Akhir Tahun Intel & Corsair`, `Flash Sale Samsung SSD`) masih aktif dan memengaruhi `effective_price`; nonaktifkan bila ingin harga murni dari XLS.
+
+## P3 - Auth Lanjutan & Kebersihan
 
 - [ ] JWT HS256 (atau revisi PRD bila tetap memakai token Bearer acak).
 - [ ] OTP 6 digit (hash, 5–10 menit, max 5 percobaan, cooldown resend).
