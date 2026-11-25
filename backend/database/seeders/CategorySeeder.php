@@ -20,6 +20,7 @@ class CategorySeeder extends Seeder
             ['name' => 'Case', 'slug' => 'case', 'type' => 'component', 'icon' => 'box'],
             ['name' => 'Power Supply', 'slug' => 'psu', 'type' => 'component', 'icon' => 'plug'],
             ['name' => 'Harddisk', 'slug' => 'harddisk', 'type' => 'component', 'icon' => 'database'],
+            ['name' => 'CPU Cooler', 'slug' => 'cooler', 'type' => 'component', 'icon' => 'snowflake'],
             ['name' => 'Case Fan', 'slug' => 'case_fan', 'type' => 'accessory', 'icon' => 'fan'],
             ['name' => 'Thermal Paste', 'slug' => 'thermal_paste', 'type' => 'accessory', 'icon' => 'droplet'],
             ['name' => 'Operating System', 'slug' => 'operating_system', 'type' => 'accessory', 'icon' => 'app-window'],

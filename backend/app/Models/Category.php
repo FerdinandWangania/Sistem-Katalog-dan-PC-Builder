@@ -5,7 +5,7 @@ namespace App\Models;
 use MongoDB\Laravel\Eloquent\Model;
 
 /**
- * Category — kategori katalog (18 slug baku).
+ * Category — kategori katalog (19 slug baku).
  *
  * @property string $_id
  * @property string $name
@@ -18,7 +18,7 @@ class Category extends Model
 {
     public const SLUGS = [
         'cpu', 'motherboard', 'ram', 'ssd', 'gpu', 'case', 'psu',
-        'harddisk', 'case_fan', 'thermal_paste', 'operating_system',
+        'cooler', 'harddisk', 'case_fan', 'thermal_paste', 'operating_system',
         'sound_card', 'network_card', 'capture_card', 'mouse', 'mousepad',
         'keyboard', 'monitor',
     ];

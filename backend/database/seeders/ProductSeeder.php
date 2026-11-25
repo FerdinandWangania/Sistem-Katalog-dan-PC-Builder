@@ -12,7 +12,27 @@ class ProductSeeder extends Seeder
         Product::truncate();
 
         $products = [
-            // CPU
+            // ---------------------------------------------------------
+            // CPU (5)
+            // ---------------------------------------------------------
+            [
+                'category' => 'cpu',
+                'brand' => 'Intel',
+                'name' => 'Intel Core i5-14600K',
+                'price' => 4300000,
+                'discount_price' => 0,
+                'stock' => 30,
+                'image' => 'https://placehold.co/600x400?text=i5-14600K',
+                'specs' => [
+                    'cores' => 14,
+                    'threads' => 20,
+                    'base_clock' => '3.5 GHz',
+                    'boost_clock' => '5.3 GHz',
+                    'tdp' => '125W',
+                    'socket' => 'LGA1700',
+                    'igpu' => 'Intel UHD 770',
+                ],
+            ],
             [
                 'category' => 'cpu',
                 'brand' => 'Intel',
@@ -28,6 +48,44 @@ class ProductSeeder extends Seeder
                     'boost_clock' => '6.0 GHz',
                     'tdp' => '125W',
                     'socket' => 'LGA1700',
+                    'igpu' => 'Intel UHD 770',
+                ],
+            ],
+            [
+                'category' => 'cpu',
+                'brand' => 'AMD',
+                'name' => 'AMD Ryzen 5 7600X',
+                'price' => 3200000,
+                'discount_price' => 0,
+                'stock' => 35,
+                'image' => 'https://placehold.co/600x400?text=Ryzen-5-7600X',
+                'specs' => [
+                    'cores' => 6,
+                    'threads' => 12,
+                    'base_clock' => '4.7 GHz',
+                    'boost_clock' => '5.3 GHz',
+                    'tdp' => '105W',
+                    'socket' => 'AM5',
+                    'igpu' => 'Radeon Graphics',
+                ],
+            ],
+            [
+                'category' => 'cpu',
+                'brand' => 'AMD',
+                'name' => 'AMD Ryzen 7 7800X3D',
+                'price' => 5800000,
+                'discount_price' => 0,
+                'stock' => 18,
+                'image' => 'https://placehold.co/600x400?text=Ryzen-7-7800X3D',
+                'specs' => [
+                    'cores' => 8,
+                    'threads' => 16,
+                    'base_clock' => '4.2 GHz',
+                    'boost_clock' => '5.0 GHz',
+                    'tdp' => '120W',
+                    'socket' => 'AM5',
+                    'cache' => '96MB 3D V-Cache',
+                    'igpu' => 'Radeon Graphics',
                 ],
             ],
             [
@@ -45,9 +103,107 @@ class ProductSeeder extends Seeder
                     'boost_clock' => '5.7 GHz',
                     'tdp' => '170W',
                     'socket' => 'AM5',
+                    'igpu' => 'Radeon Graphics',
                 ],
             ],
-            // GPU
+
+            // ---------------------------------------------------------
+            // Motherboard (5)
+            // ---------------------------------------------------------
+            [
+                'category' => 'motherboard',
+                'brand' => 'ASUS',
+                'name' => 'ASUS ROG Maximus Z790 Hero',
+                'price' => 6800000,
+                'discount_price' => 0,
+                'stock' => 10,
+                'image' => 'https://placehold.co/600x400?text=Maximus-Z790',
+                'specs' => [
+                    'socket' => 'LGA1700',
+                    'chipset' => 'Z790',
+                    'form_factor' => 'ATX',
+                    'memory_slots' => 4,
+                    'memory_type' => 'DDR5',
+                    'max_memory' => '128GB DDR5',
+                    'm2_slots' => 2,
+                ],
+            ],
+            [
+                'category' => 'motherboard',
+                'brand' => 'MSI',
+                'name' => 'MSI MAG B760M Mortar WiFi',
+                'price' => 2600000,
+                'discount_price' => 0,
+                'stock' => 25,
+                'image' => 'https://placehold.co/600x400?text=B760M-Mortar',
+                'specs' => [
+                    'socket' => 'LGA1700',
+                    'chipset' => 'B760',
+                    'form_factor' => 'Micro-ATX',
+                    'memory_slots' => 4,
+                    'memory_type' => 'DDR5',
+                    'max_memory' => '128GB DDR5',
+                    'm2_slots' => 2,
+                ],
+            ],
+            [
+                'category' => 'motherboard',
+                'brand' => 'Gigabyte',
+                'name' => 'Gigabyte Z790 AORUS Elite AX',
+                'price' => 4200000,
+                'discount_price' => 0,
+                'stock' => 14,
+                'image' => 'https://placehold.co/600x400?text=Z790-AORUS-Elite',
+                'specs' => [
+                    'socket' => 'LGA1700',
+                    'chipset' => 'Z790',
+                    'form_factor' => 'ATX',
+                    'memory_slots' => 4,
+                    'memory_type' => 'DDR5',
+                    'max_memory' => '128GB DDR5',
+                    'm2_slots' => 4,
+                ],
+            ],
+            [
+                'category' => 'motherboard',
+                'brand' => 'ASUS',
+                'name' => 'ASUS ROG Strix B650E-F Gaming WiFi',
+                'price' => 4500000,
+                'discount_price' => 4200000,
+                'stock' => 15,
+                'image' => 'https://placehold.co/600x400?text=Strix-B650E',
+                'specs' => [
+                    'socket' => 'AM5',
+                    'chipset' => 'B650E',
+                    'form_factor' => 'ATX',
+                    'memory_slots' => 4,
+                    'memory_type' => 'DDR5',
+                    'max_memory' => '128GB DDR5',
+                    'm2_slots' => 3,
+                ],
+            ],
+            [
+                'category' => 'motherboard',
+                'brand' => 'MSI',
+                'name' => 'MSI MPG X670E Carbon WiFi',
+                'price' => 5500000,
+                'discount_price' => 0,
+                'stock' => 12,
+                'image' => 'https://placehold.co/600x400?text=X670E-Carbon',
+                'specs' => [
+                    'socket' => 'AM5',
+                    'chipset' => 'X670E',
+                    'form_factor' => 'ATX',
+                    'memory_slots' => 4,
+                    'memory_type' => 'DDR5',
+                    'max_memory' => '128GB DDR5',
+                    'm2_slots' => 4,
+                ],
+            ],
+
+            // ---------------------------------------------------------
+            // GPU (5)
+            // ---------------------------------------------------------
             [
                 'category' => 'gpu',
                 'brand' => 'NVIDIA',
@@ -66,8 +222,40 @@ class ProductSeeder extends Seeder
             ],
             [
                 'category' => 'gpu',
+                'brand' => 'NVIDIA',
+                'name' => 'NVIDIA RTX 4080 Super 16GB',
+                'price' => 16500000,
+                'discount_price' => 0,
+                'stock' => 10,
+                'image' => 'https://placehold.co/600x400?text=RTX-4080-Super',
+                'specs' => [
+                    'vram' => '16GB GDDR6X',
+                    'cuda_cores' => 10240,
+                    'tdp' => '320W',
+                    'length' => 310,
+                    'pcie' => 'PCIe 4.0 x16',
+                ],
+            ],
+            [
+                'category' => 'gpu',
+                'brand' => 'NVIDIA',
+                'name' => 'NVIDIA RTX 4070 Super 12GB',
+                'price' => 10500000,
+                'discount_price' => 0,
+                'stock' => 16,
+                'image' => 'https://placehold.co/600x400?text=RTX-4070-Super',
+                'specs' => [
+                    'vram' => '12GB GDDR6X',
+                    'cuda_cores' => 7168,
+                    'tdp' => '220W',
+                    'length' => 285,
+                    'pcie' => 'PCIe 4.0 x16',
+                ],
+            ],
+            [
+                'category' => 'gpu',
                 'brand' => 'AMD',
-                'name' => 'AMD RX 7900 XTX',
+                'name' => 'AMD Radeon RX 7900 XTX 24GB',
                 'price' => 14500000,
                 'discount_price' => 0,
                 'stock' => 12,
@@ -80,7 +268,26 @@ class ProductSeeder extends Seeder
                     'pcie' => 'PCIe 4.0 x16',
                 ],
             ],
-            // RAM
+            [
+                'category' => 'gpu',
+                'brand' => 'AMD',
+                'name' => 'AMD Radeon RX 7800 XT 16GB',
+                'price' => 8500000,
+                'discount_price' => 0,
+                'stock' => 18,
+                'image' => 'https://placehold.co/600x400?text=RX-7800-XT',
+                'specs' => [
+                    'vram' => '16GB GDDR6',
+                    'stream_processors' => 3840,
+                    'tdp' => '263W',
+                    'length' => 267,
+                    'pcie' => 'PCIe 4.0 x16',
+                ],
+            ],
+
+            // ---------------------------------------------------------
+            // RAM (5)
+            // ---------------------------------------------------------
             [
                 'category' => 'ram',
                 'brand' => 'Corsair',
@@ -94,6 +301,7 @@ class ProductSeeder extends Seeder
                     'type' => 'DDR5',
                     'speed' => '6000MHz',
                     'latency' => 'CL36',
+                    'profile' => 'XMP 3.0',
                 ],
             ],
             [
@@ -109,9 +317,61 @@ class ProductSeeder extends Seeder
                     'type' => 'DDR5',
                     'speed' => '6400MHz',
                     'latency' => 'CL32',
+                    'lighting' => 'RGB',
                 ],
             ],
-            // SSD
+            [
+                'category' => 'ram',
+                'brand' => 'Kingston',
+                'name' => 'Kingston Fury Beast 16GB DDR5-5600',
+                'price' => 850000,
+                'discount_price' => 0,
+                'stock' => 40,
+                'image' => 'https://placehold.co/600x400?text=Fury-Beast-16GB',
+                'specs' => [
+                    'capacity' => '16GB (2x8GB)',
+                    'type' => 'DDR5',
+                    'speed' => '5600MHz',
+                    'latency' => 'CL40',
+                    'profile' => 'XMP 3.0',
+                ],
+            ],
+            [
+                'category' => 'ram',
+                'brand' => 'TeamGroup',
+                'name' => 'TeamGroup T-Force Delta RGB 32GB DDR5-6000',
+                'price' => 1650000,
+                'discount_price' => 0,
+                'stock' => 28,
+                'image' => 'https://placehold.co/600x400?text=Delta-RGB-32GB',
+                'specs' => [
+                    'capacity' => '32GB (2x16GB)',
+                    'type' => 'DDR5',
+                    'speed' => '6000MHz',
+                    'latency' => 'CL30',
+                    'lighting' => 'RGB',
+                ],
+            ],
+            [
+                'category' => 'ram',
+                'brand' => 'G.Skill',
+                'name' => 'G.Skill Flare X5 32GB DDR5-6000',
+                'price' => 1700000,
+                'discount_price' => 0,
+                'stock' => 32,
+                'image' => 'https://placehold.co/600x400?text=Flare-X5-32GB',
+                'specs' => [
+                    'capacity' => '32GB (2x16GB)',
+                    'type' => 'DDR5',
+                    'speed' => '6000MHz',
+                    'latency' => 'CL30',
+                    'profile' => 'AMD EXPO',
+                ],
+            ],
+
+            // ---------------------------------------------------------
+            // Storage / SSD (5)
+            // ---------------------------------------------------------
             [
                 'category' => 'ssd',
                 'brand' => 'Samsung',
@@ -128,42 +388,74 @@ class ProductSeeder extends Seeder
                     'form_factor' => 'M.2 2280',
                 ],
             ],
-            // Motherboard
             [
-                'category' => 'motherboard',
-                'brand' => 'ASUS',
-                'name' => 'ASUS ROG Maximus Z790 Hero',
-                'price' => 6800000,
+                'category' => 'ssd',
+                'brand' => 'Crucial',
+                'name' => 'Crucial T700 2TB NVMe',
+                'price' => 3800000,
                 'discount_price' => 0,
-                'stock' => 10,
-                'image' => 'https://placehold.co/600x400?text=Maximus-Z790',
+                'stock' => 15,
+                'image' => 'https://placehold.co/600x400?text=Crucial-T700-2TB',
                 'specs' => [
-                    'socket' => 'LGA1700',
-                    'chipset' => 'Z790',
-                    'form_factor' => 'ATX',
-                    'memory_slots' => 4,
-                    'memory_type' => 'DDR5',
-                    'max_memory' => '128GB DDR5',
+                    'capacity' => '2TB',
+                    'interface' => 'PCIe 5.0 NVMe M.2',
+                    'read_speed' => '12400 MB/s',
+                    'write_speed' => '11800 MB/s',
+                    'form_factor' => 'M.2 2280',
                 ],
             ],
             [
-                'category' => 'motherboard',
-                'brand' => 'ASUS',
-                'name' => 'ASUS ROG Strix B650E-F Gaming WiFi',
-                'price' => 4500000,
-                'discount_price' => 4200000,
-                'stock' => 15,
-                'image' => 'https://placehold.co/600x400?text=Strix-B650E',
+                'category' => 'ssd',
+                'brand' => 'WD',
+                'name' => 'WD Black SN850X 1TB NVMe',
+                'price' => 1500000,
+                'discount_price' => 0,
+                'stock' => 30,
+                'image' => 'https://placehold.co/600x400?text=SN850X-1TB',
                 'specs' => [
-                    'socket' => 'AM5',
-                    'chipset' => 'B650E',
-                    'form_factor' => 'ATX',
-                    'memory_slots' => 4,
-                    'memory_type' => 'DDR5',
-                    'max_memory' => '128GB DDR5',
+                    'capacity' => '1TB',
+                    'interface' => 'PCIe 4.0 NVMe M.2',
+                    'read_speed' => '7300 MB/s',
+                    'write_speed' => '6300 MB/s',
+                    'form_factor' => 'M.2 2280',
                 ],
             ],
-            // PSU
+            [
+                'category' => 'ssd',
+                'brand' => 'Kingston',
+                'name' => 'Kingston NV2 1TB NVMe',
+                'price' => 750000,
+                'discount_price' => 0,
+                'stock' => 45,
+                'image' => 'https://placehold.co/600x400?text=NV2-1TB',
+                'specs' => [
+                    'capacity' => '1TB',
+                    'interface' => 'PCIe 4.0 NVMe M.2',
+                    'read_speed' => '3500 MB/s',
+                    'write_speed' => '2100 MB/s',
+                    'form_factor' => 'M.2 2280',
+                ],
+            ],
+            [
+                'category' => 'ssd',
+                'brand' => 'Samsung',
+                'name' => 'Samsung 870 EVO 1TB SATA',
+                'price' => 1100000,
+                'discount_price' => 0,
+                'stock' => 35,
+                'image' => 'https://placehold.co/600x400?text=870-EVO-1TB',
+                'specs' => [
+                    'capacity' => '1TB',
+                    'interface' => 'SATA III',
+                    'read_speed' => '560 MB/s',
+                    'write_speed' => '530 MB/s',
+                    'form_factor' => '2.5 inch',
+                ],
+            ],
+
+            // ---------------------------------------------------------
+            // PSU (5)
+            // ---------------------------------------------------------
             [
                 'category' => 'psu',
                 'brand' => 'Seasonic',
@@ -196,7 +488,58 @@ class ProductSeeder extends Seeder
                     'fan_size' => '120mm',
                 ],
             ],
-            // Casing
+            [
+                'category' => 'psu',
+                'brand' => 'Corsair',
+                'name' => 'Corsair RM1000x 1000W 80+ Gold',
+                'price' => 2800000,
+                'discount_price' => 0,
+                'stock' => 20,
+                'image' => 'https://placehold.co/600x400?text=RM1000x',
+                'specs' => [
+                    'wattage' => '1000W',
+                    'wattage_w' => 1000,
+                    'efficiency' => '80+ Gold',
+                    'modular' => 'Full Modular',
+                    'fan_size' => '135mm',
+                ],
+            ],
+            [
+                'category' => 'psu',
+                'brand' => 'MSI',
+                'name' => 'MSI MAG A650BN 650W 80+ Bronze',
+                'price' => 750000,
+                'discount_price' => 0,
+                'stock' => 40,
+                'image' => 'https://placehold.co/600x400?text=MAG-A650BN',
+                'specs' => [
+                    'wattage' => '650W',
+                    'wattage_w' => 650,
+                    'efficiency' => '80+ Bronze',
+                    'modular' => 'Non-Modular',
+                    'fan_size' => '120mm',
+                ],
+            ],
+            [
+                'category' => 'psu',
+                'brand' => 'be quiet!',
+                'name' => 'be quiet! Straight Power 12 850W 80+ Platinum',
+                'price' => 2400000,
+                'discount_price' => 0,
+                'stock' => 18,
+                'image' => 'https://placehold.co/600x400?text=Straight-Power-12',
+                'specs' => [
+                    'wattage' => '850W',
+                    'wattage_w' => 850,
+                    'efficiency' => '80+ Platinum',
+                    'modular' => 'Full Modular',
+                    'fan_size' => '135mm',
+                ],
+            ],
+
+            // ---------------------------------------------------------
+            // Casing (5)
+            // ---------------------------------------------------------
             [
                 'category' => 'case',
                 'brand' => 'Lian Li',
@@ -207,7 +550,7 @@ class ProductSeeder extends Seeder
                 'image' => 'https://placehold.co/600x400?text=O11-Dynamic-EVO',
                 'specs' => [
                     'form_factor' => 'ATX',
-                    'max_gpu' => '422mm',
+                    'max_gpu' => 422,
                     'drive_bays' => '2x 2.5" + 4x 3.5"',
                     'radiator_support' => '360mm top/front',
                 ],
@@ -222,19 +565,148 @@ class ProductSeeder extends Seeder
                 'image' => 'https://placehold.co/600x400?text=H5-Flow',
                 'specs' => [
                     'form_factor' => 'ATX',
-                    'max_gpu' => '365mm',
+                    'max_gpu' => 365,
                     'drive_bays' => '1x 2.5" + 1x 3.5"',
                     'radiator_support' => '280mm front',
+                ],
+            ],
+            [
+                'category' => 'case',
+                'brand' => 'Corsair',
+                'name' => 'Corsair 4000D Airflow',
+                'price' => 1300000,
+                'discount_price' => 0,
+                'stock' => 24,
+                'image' => 'https://placehold.co/600x400?text=4000D-Airflow',
+                'specs' => [
+                    'form_factor' => 'ATX',
+                    'max_gpu' => 360,
+                    'drive_bays' => '2x 2.5" + 2x 3.5"',
+                    'radiator_support' => '360mm front',
+                ],
+            ],
+            [
+                'category' => 'case',
+                'brand' => 'Fractal Design',
+                'name' => 'Fractal Design North',
+                'price' => 2000000,
+                'discount_price' => 0,
+                'stock' => 16,
+                'image' => 'https://placehold.co/600x400?text=Fractal-North',
+                'specs' => [
+                    'form_factor' => 'ATX',
+                    'max_gpu' => 355,
+                    'drive_bays' => '2x 2.5" + 2x 3.5"',
+                    'radiator_support' => '360mm front',
+                ],
+            ],
+            [
+                'category' => 'case',
+                'brand' => 'ASUS',
+                'name' => 'ASUS Prime AP201',
+                'price' => 1100000,
+                'discount_price' => 0,
+                'stock' => 22,
+                'image' => 'https://placehold.co/600x400?text=Prime-AP201',
+                'specs' => [
+                    'form_factor' => 'Micro-ATX',
+                    'max_gpu' => 338,
+                    'drive_bays' => '3x 2.5" + 1x 3.5"',
+                    'radiator_support' => '360mm top',
+                ],
+            ],
+
+            // ---------------------------------------------------------
+            // CPU Cooler (5)
+            // ---------------------------------------------------------
+            [
+                'category' => 'cooler',
+                'brand' => 'Noctua',
+                'name' => 'Noctua NH-D15',
+                'price' => 1650000,
+                'discount_price' => 0,
+                'stock' => 14,
+                'image' => 'https://placehold.co/600x400?text=Noctua-NH-D15',
+                'specs' => [
+                    'type' => 'Air Dual Tower',
+                    'height_mm' => 165,
+                    'tdp_rating' => '250W',
+                    'socket_support' => ['LGA1700', 'AM5'],
+                    'fans' => '2x 140mm',
+                ],
+            ],
+            [
+                'category' => 'cooler',
+                'brand' => 'DeepCool',
+                'name' => 'DeepCool AK620',
+                'price' => 900000,
+                'discount_price' => 0,
+                'stock' => 28,
+                'image' => 'https://placehold.co/600x400?text=DeepCool-AK620',
+                'specs' => [
+                    'type' => 'Air Dual Tower',
+                    'height_mm' => 160,
+                    'tdp_rating' => '260W',
+                    'socket_support' => ['LGA1700', 'AM5'],
+                    'fans' => '2x 120mm',
+                ],
+            ],
+            [
+                'category' => 'cooler',
+                'brand' => 'Cooler Master',
+                'name' => 'Cooler Master Hyper 212 Black Edition',
+                'price' => 450000,
+                'discount_price' => 0,
+                'stock' => 35,
+                'image' => 'https://placehold.co/600x400?text=Hyper-212-Black',
+                'specs' => [
+                    'type' => 'Air Single Tower',
+                    'height_mm' => 158,
+                    'tdp_rating' => '150W',
+                    'socket_support' => ['LGA1700', 'AM5'],
+                    'fans' => '1x 120mm',
+                ],
+            ],
+            [
+                'category' => 'cooler',
+                'brand' => 'NZXT',
+                'name' => 'NZXT Kraken 240',
+                'price' => 2100000,
+                'discount_price' => 0,
+                'stock' => 16,
+                'image' => 'https://placehold.co/600x400?text=Kraken-240',
+                'specs' => [
+                    'type' => 'AIO 240mm',
+                    'radiator_size' => '240mm',
+                    'tdp_rating' => '280W',
+                    'socket_support' => ['LGA1700', 'AM5'],
+                    'fans' => '2x 120mm RGB',
+                ],
+            ],
+            [
+                'category' => 'cooler',
+                'brand' => 'Arctic',
+                'name' => 'Arctic Liquid Freezer III 360',
+                'price' => 1800000,
+                'discount_price' => 0,
+                'stock' => 20,
+                'image' => 'https://placehold.co/600x400?text=Liquid-Freezer-III-360',
+                'specs' => [
+                    'type' => 'AIO 360mm',
+                    'radiator_size' => '360mm',
+                    'tdp_rating' => '350W',
+                    'socket_support' => ['LGA1700', 'AM5'],
+                    'fans' => '3x 120mm',
                 ],
             ],
         ];
 
         foreach ($products as $data) {
-            // HPP contoh untuk demo laporan keuangan (±78% dari harga dasar).
+            // HPP contoh untuk demo laporan keuangan (sekitar 78% dari harga dasar).
             $data['hpp'] ??= (int) round($data['price'] * 0.78);
             Product::create($data);
         }
 
-        $this->command->info('✓ '.count($products).' produk berhasil di-seed.');
+        $this->command->info('OK '.count($products).' produk berhasil di-seed.');
     }
 }
