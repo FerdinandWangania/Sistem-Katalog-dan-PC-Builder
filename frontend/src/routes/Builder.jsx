@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import { get as getData, mockEnabled, shouldMock } from '../lib/data.js';
 import { api, ownerParams } from '../lib/api.js';
-import { getCart } from '../lib/cart.js';
+import { appendMockCart, getCart, notifyCartChanged, replaceMockBuild } from '../lib/cart.js';
 import { effectivePrice, formatIDR } from '../lib/catalog.js';
 import { specRows } from '../components/ProductCard.jsx';
 import { Shell } from '../components/Layout.jsx';
@@ -716,22 +716,107 @@ function BuilderInner() {
     setCompatModal(null);
   };
 
-  // Simpan atomik pengganti rakitan (PUT /builder/builds/{id}, revalidasi backend).
-  const saveEdit = async () => {
-    if (!editBuildId) return;
+  // Simpan rakitan ke keranjang (FE-08): validasi backend dulu via
+  // POST /builder/add-to-cart, samakan qty > 1, lalu ke /keranjang.
+  const [saving, setSaving] = useState(false);
+  const saveToCart = async () => {
+    if (saving) return;
+    setSaving(true);
+    const body = { ...JSON.parse(payloadKey), build_name: buildName.slice(0, 60), ignore_psu_warning: ignorePsu };
     try {
-      await api.put(`/builder/builds/${editBuildId}`, {
-        query: ownerParams(),
-        body: { ...JSON.parse(payloadKey), build_name: buildName.slice(0, 60), ignore_psu_warning: ignorePsu },
-      });
+      const res = await api.post('/builder/add-to-cart', { query: ownerParams(), body });
+      const buildId = res.data?.build_id;
+      // Endpoint selalu menyimpan qty 1: tulis ulang item yang qty-nya > 1
+      // (POST /cart/items mendukung source_type builder + build_id + qty).
+      const multi = Object.keys(sel).filter((k) => sel[k] && qtyOf(k) > 1);
+      if (buildId && multi.length > 0) {
+        const cartRes = await getCart();
+        const saved = [...(cartRes.data?.builder_builds || [])].find((b) => String(b.build_id) === String(buildId));
+        for (const comp of saved?.components || []) {
+          const key = multi.find((k) => String(sel[k]?._id || sel[k]?.id) === String(comp.product_id));
+          const q = key ? qtyOf(key) : 1;
+          if (q <= 1) continue;
+          await api.delete(`/cart/items/${comp._id}`, { query: ownerParams() });
+          await api.post('/cart/items', {
+            body: { ...ownerParams(), product_id: comp.product_id, qty: q, source_type: 'builder', build_id: buildId },
+          });
+        }
+      }
+      notifyCartChanged();
+      toast.success('Rakitan masuk keranjang.');
       try {
         localStorage.removeItem(STORAGE_KEY);
       } catch {
         // abaikan
       }
-      toast.success('Rakitan berhasil diperbarui.');
       navigate('/keranjang');
     } catch (e) {
+      if (shouldMock(e)) {
+        const buildId = `mock-build-${Date.now()}`;
+        appendMockCart(
+          Object.keys(sel)
+            .filter((k) => sel[k])
+            .map((k) => ({
+              product_id: sel[k]._id || sel[k].id,
+              qty: qtyOf(k),
+              source_type: 'builder',
+              build_id: buildId,
+              build_name: (buildName || sel.cpu?.name || 'Rakitan PC').slice(0, 60),
+            })),
+        );
+        toast.success('Rakitan masuk keranjang (mode offline).');
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // abaikan
+        }
+        navigate('/keranjang');
+      } else {
+        toast.error(e.payload?.message || e.message || 'Gagal menyimpan rakitan.');
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Simpan atomik pengganti rakitan (PUT /builder/builds/{id}, revalidasi backend).
+  const saveEdit = async () => {
+    if (!editBuildId) return;
+    const entries = () =>
+      Object.keys(sel)
+        .filter((k) => sel[k])
+        .map((k) => ({
+          product_id: sel[k]._id || sel[k].id,
+          qty: qtyOf(k),
+          source_type: 'builder',
+          build_id: editBuildId,
+          build_name: (buildName || sel.cpu?.name || 'Rakitan PC').slice(0, 60),
+        }));
+    try {
+      await api.put(`/builder/builds/${editBuildId}`, {
+        query: ownerParams(),
+        body: { ...JSON.parse(payloadKey), build_name: buildName.slice(0, 60), ignore_psu_warning: ignorePsu },
+      });
+      notifyCartChanged();
+      toast.success('Rakitan berhasil diperbarui.');
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // abaikan
+      }
+      navigate('/keranjang');
+    } catch (e) {
+      if (shouldMock(e)) {
+        replaceMockBuild(editBuildId, entries());
+        toast.success('Rakitan berhasil diperbarui (mode offline).');
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // abaikan
+        }
+        navigate('/keranjang');
+        return;
+      }
       toast.error(e.payload?.message || e.message || 'Gagal menyimpan perubahan.');
     }
   };
@@ -1065,11 +1150,11 @@ function BuilderInner() {
           ) : (
             <button
               className={btnClasses('primary', null, 'tracking-[0.06em] max-md:flex-1 max-md:justify-center')}
-              disabled={!canContinue}
-              title={canContinue ? 'Lanjut ke pembayaran' : 'Lengkapi 7 slot utama dan perbaiki error kompatibilitas'}
-              onClick={() => toast.success('Rakitan kompatibel. Simpan ke keranjang hadir di FE-07.')}
+              disabled={!canContinue || saving}
+              title={canContinue ? 'Simpan rakitan ke keranjang' : 'Lengkapi 7 slot utama dan perbaiki error kompatibilitas'}
+              onClick={saveToCart}
             >
-              LANJUT PEMBAYARAN
+              {saving ? 'Menyimpan…' : 'LANJUT PEMBAYARAN'}
             </button>
           )}
         </div>

@@ -11,7 +11,27 @@ const CART_EVENT = 'bw-cart-changed';
 const MOCK_CART_KEY = 'bw_cart_mock';
 
 function notifyCartChanged() {
+  // Diekspor untuk orders.js (checkout mock juga mengosongkan keranjang)
+  // dan Builder.jsx (FE-08: simpan rakitan lalu ke keranjang).
   window.dispatchEvent(new CustomEvent(CART_EVENT));
+}
+
+export { notifyCartChanged };
+
+/** Tulis entri mentah ke mock cart (dipakai simpan rakitan saat offline). */
+export function appendMockCart(entries) {
+  const items = readMockCart();
+  items.push(...entries.filter(Boolean));
+  writeMockCart(items);
+  notifyCartChanged();
+}
+
+/** Ganti utuh satu rakitan mock (dipakai edit rakitan saat offline). */
+export function replaceMockBuild(buildId, entries) {
+  const items = readMockCart().filter((it) => !(it.source_type === 'builder' && String(it.build_id) === String(buildId)));
+  items.push(...entries.filter(Boolean));
+  writeMockCart(items);
+  notifyCartChanged();
 }
 
 function readMockCart() {
