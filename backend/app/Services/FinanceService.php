@@ -215,6 +215,73 @@ class FinanceService
     }
 
     /**
+     * Produk terlaris berdasarkan order berbayar pada periode.
+     *
+     * @return array{period: array{from: string, to: string}, rows: array<int, array<string, mixed>>}
+     */
+    public function topProducts(Carbon $from, Carbon $to, int $limit = 10): array
+    {
+        $orderIds = $this->paidOrderIds($from, $to);
+
+        if ($orderIds->isEmpty()) {
+            return [
+                'period' => $this->period($from, $to),
+                'rows' => [],
+            ];
+        }
+
+        $items = OrderItem::whereIn('order_id', $orderIds)->get();
+        $productIds = $items->pluck('product_id')
+            ->filter()
+            ->map(static fn ($id): string => (string) $id)
+            ->unique()
+            ->values();
+
+        $products = Product::whereIn('_id', $productIds)
+            ->get()
+            ->keyBy(static fn (Product $product): string => (string) $product->_id);
+
+        $rows = [];
+
+        foreach ($items as $item) {
+            $productId = (string) $item->product_id;
+            $product = $products[$productId] ?? null;
+
+            $rows[$productId] ??= [
+                'product_id' => $productId,
+                'name' => $product?->name ?? 'Produk terhapus',
+                'brand' => $product?->brand,
+                'category' => $product?->category,
+                'quantity' => 0,
+                'revenue' => 0.0,
+                'orders_count' => 0,
+                'order_ids' => [],
+            ];
+
+            $quantity = (int) $item->qty;
+
+            $rows[$productId]['quantity'] += $quantity;
+            $rows[$productId]['revenue'] += (float) $item->price_snapshot * $quantity;
+            $rows[$productId]['order_ids'][(string) $item->order_id] = true;
+        }
+
+        $result = array_map(static function (array $row): array {
+            $row['orders_count'] = count($row['order_ids']);
+            unset($row['order_ids']);
+            $row['revenue'] = round($row['revenue'], 2);
+
+            return $row;
+        }, array_values($rows));
+
+        usort($result, static fn (array $a, array $b): int => $b['revenue'] <=> $a['revenue']);
+
+        return [
+            'period' => $this->period($from, $to),
+            'rows' => array_slice($result, 0, max(1, $limit)),
+        ];
+    }
+
+    /**
      * @return Collection<int, string>
      */
     private function paidOrderIds(Carbon $from, Carbon $to): Collection

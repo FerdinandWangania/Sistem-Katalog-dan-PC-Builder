@@ -17,11 +17,11 @@ Prioritas mengikuti PRD §15: **P1 → P2 → P3**, lalu frontend.
 | P1 — Integritas Rakitan & Checkout | ✅ selesai |
 | P1 — Kontrol Akses & Manajemen Akun | ✅ selesai (penegakan wajib ganti password menyusul di P3) |
 | P1 — Modul Keuangan | ✅ selesai |
-| P2 — Promo, Alamat, Ulasan, Midtrans | ⬜ belum |
+| P2 — Promo, Alamat, Ulasan, Midtrans | ✅ selesai |
 | P3 — Auth Lanjutan & Kebersihan | ⬜ belum |
 | Frontend React | ⬜ belum |
 
-Verifikasi terakhir: `php artisan test` → **22 passed (83 assertions)**; smoke test dengan data seeder (validate, add-to-cart, replace build, login role, laporan keuangan) berhasil.
+Verifikasi terakhir: `php artisan test` → **45 passed (361 assertions)**; route API sudah dicek dengan `php artisan route:list`. P2 memakai config Midtrans placeholder (`MIDTRANS_SERVER_KEY`/`MIDTRANS_CLIENT_KEY`) dan test HTTP memakai `Http::fake()`; panggilan sandbox asli memerlukan kredensial Midtrans.
 
 ---
 
@@ -78,15 +78,22 @@ Target: tiga laporan keuangan + export CSV sesuai FR-023.
 
 ## P2 — Promo, Alamat, Ulasan, Midtrans
 
-- [ ] Promo banner: `banner_image`, `click_target_type/value`, `product_ids`, `is_active`.
-- [ ] Penimpaan/pelewatan diskon manual (Timpa / Lewati / Timpa semua).
-- [ ] Kode promo (`promo_codes`) + validasi saat checkout.
-- [ ] Alamat pembeli (max 10, satu default, guest via `session_id`).
-- [ ] Ulasan (1 per pengguna per produk) + moderasi admin.
-- [ ] Koleksi `categories` & `brands` + CRUD + validasi slug.
-- [ ] Midtrans Snap: `snap-token`, callback SHA512, layar instruksi bayar.
-- [ ] `payment_logs` + rekonsiliasi + halaman riwayat transaksi.
-- [ ] Job kedaluwarsa order + restore stok.
+- [x] Promo banner: `banner_image`, `click_target_type/value`, `product_ids`, `is_active`; endpoint publik hanya menampilkan promo aktif, endpoint admin menampilkan semua.
+- [x] Harga promo dinamis via `PromotionService` (promo aktif menimpa diskon manual; produk yang dilewati disimpan di `excluded_product_ids`).
+- [x] Penimpaan/pelewatan diskon manual (Timpa / Lewati / Timpa per produk) + respons `422` berisi `manual_discount_conflicts` sebelum admin memilih.
+- [x] Kode promo (`promo_codes`): CRUD admin, validasi kode + alokasi diskon proporsional per item, batas brand dan minimum belanja.
+- [x] Alamat pembeli (max 10, satu default otomatis, guest via `session_id`, proteksi kepemilikan).
+- [x] Ulasan (1 per pengguna per produk) + agregasi `rating`/`review_count` + moderasi admin.
+- [x] Koleksi `categories` & `brands` + CRUD admin, validasi slug kategori, guard hapus 409 saat masih dipakai.
+- [x] `GET /categories`, `GET /brands`, filter/pagination produk, dan `sku`/`badge`/`rating`/`review_count` pada produk.
+- [x] Midtrans Snap: `POST /payments/{order}/snap-token`, callback SHA512, layar instruksi bayar, idempotensi status.
+- [x] `payment_logs` + rekonsiliasi + endpoint admin daftar/detail log pembayaran.
+- [x] Job `orders:expire` setiap menit + restore stok idempoten (`stock_restored`).
+- [x] Checkout server-side: `address_id`, `shipping_method` (ongkir default Rp25.000, pickup gratis), `payment_method`, biaya layanan kartu kredit 2,9%, blokir QRIS > Rp10.000.000, `expired_at` 24 jam, rollback stok bila gagal.
+- [x] Promo code diterapkan saat checkout; `price_snapshot` menyimpan harga setelah diskon dan `price_list_snapshot` menyimpan harga dasar untuk laporan keuangan.
+- [x] Produk terlaris periode (`GET /admin/top-products`) untuk dashboard admin/keuangan.
+- [x] HPP tidak pernah tampil ke pembeli (`Product::$hidden` + `OrderItem::$hidden`) dan guard hapus produk 409 bila dirujuk paket/keranjang/pesanan aktif.
+- [x] Test P2: kategori/brand/produk, alamat/ulasan, promo & kode promo, checkout (QRIS/kartu kredit/alamat), Snap/callback/instruksi, log pembayaran/top products, expiry job.
 
 ## P3 — Auth Lanjutan & Kebersihan
 
@@ -95,7 +102,6 @@ Target: tiga laporan keuangan + export CSV sesuai FR-023.
 - [ ] `/admin/login` terpisah + `PATCH /me` + `PATCH /me/password` + `password_set`.
 - [ ] Login dengan email **atau** username.
 - [ ] Hapus token debug dari response produksi (`APP_DEBUG=false`).
-- [ ] Guard hapus produk 409 bila dirujuk paket/order/keranjang.
 - [ ] Status `refunded` untuk order berbayar yang dibatalkan.
 
 ## Frontend (setelah API stabil)
@@ -125,3 +131,23 @@ Skenario manual minimal (sudah lolos dengan data seeder):
 3. Tambah rakitan ke cart, ubah socket CPU, lalu checkout → **422** dengan `build_id` bermasalah.
 4. Login sebagai `keuangan` → bisa `GET /api/admin/finance/profit-loss`, tetapi `POST /api/products` → **403**.
 5. Login sebagai `superadmin` → bisa membuat akun admin baru; akun `admin` biasa → **403**.
+
+## Cara verifikasi P2
+
+```sh
+cd backend
+php artisan route:list --path=api
+php artisan migrate --database=mongodb
+php artisan db:seed --class=CategorySeeder
+php artisan db:seed --class=BrandSeeder
+php artisan db:seed --class=PromoCodeSeeder
+php artisan orders:expire
+php artisan test
+```
+
+Catatan Midtrans:
+
+- Isi `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, dan `MIDTRANS_IS_PRODUCTION=false` di `.env` untuk sandbox.
+- `POST /api/payments/{order}/snap-token` membuat transaksi Snap; `POST /api/payments/callback` memverifikasi SHA512 (`order_id + status_code + gross_amount + server_key`).
+- `http://localhost:8000/api/payments/callback` dapat didaftarkan sebagai Payment Notification URL di dashboard Midtrans.
+- Scheduler `orders:expire` berjalan setiap menit; di lokal jalankan `php artisan schedule:work`.

@@ -2,43 +2,39 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\ResolvesIdentity;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use MongoDB\BSON\ObjectId;
 
 class CartController extends Controller
 {
+    use ResolvesIdentity;
+
     /**
      * Dapatkan keranjang belanja aktif.
-     * GET /api/cart?user_id=... atau GET /api/cart?session_id=...
+     * GET /api/cart?session_id=... (tamu)
      */
     public function show(Request $request): JsonResponse
     {
-        $cart = $this->resolveCart($request);
+        $identity = $this->resolveIdentity($request);
 
+        if (! $identity) {
+            return $this->identityRequired();
+        }
+
+        $cart = $this->resolveCart($request, $identity);
         $cart->load(['items.product']);
 
         $catalogItems = $cart->items->where('source_type', 'catalog')->values();
-        $builderBuilds = $cart->items->where('source_type', 'builder')->groupBy('build_id')->map(function ($items, $buildId) {
-            return [
-                'build_id' => $buildId,
-                'build_name' => $items->first()?->build_name,
-                'total_price' => $items->sum(fn ($i) => $i->price_snapshot * $i->qty),
-                'components' => $items->values(),
-            ];
-        })->values();
-        $packageBuilds = $cart->items->where('source_type', 'package')->groupBy('build_id')->map(function ($items, $buildId) {
-            return [
-                'build_id' => $buildId,
-                'build_name' => $items->first()?->build_name,
-                'total_price' => $items->sum(fn ($i) => $i->price_snapshot * $i->qty),
-                'components' => $items->values(),
-            ];
-        })->values();
+        $builderBuilds = $this->groupBuilds($cart, 'builder');
+        $packageBuilds = $this->groupBuilds($cart, 'package');
 
         return response()->json([
             'status' => 'success',
@@ -56,28 +52,28 @@ class CartController extends Controller
     }
 
     /**
-     * Tambah produk ke keranjang (Bisa dari Katalog satuan atau PC Builder).
+     * Tambah produk ke keranjang (katalog satuan atau PC Builder).
      * POST /api/cart/items
-     * Body: {
-     *   "user_id": "...",
-     *   "product_id": "...",
-     *   "qty": 1,
-     *   "source_type": "catalog" | "builder",
-     *   "build_id": "optional-uuid-rakitan"
-     * }
      */
     public function addItem(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'user_id' => 'nullable|string',
-            'session_id' => 'nullable|string',
-            'product_id' => 'required|string',
-            'qty' => 'nullable|integer|min:1',
-            'source_type' => 'nullable|string|in:catalog,builder',
-            'build_id' => 'nullable|string',
+            'user_id' => ['nullable', 'string'],
+            'session_id' => ['nullable', 'string'],
+            'product_id' => ['required', 'string'],
+            'qty' => ['nullable', 'integer', 'min:1'],
+            'source_type' => ['nullable', 'string', 'in:catalog,builder'],
+            'build_id' => ['nullable', 'string'],
         ]);
 
+        $identity = $this->resolveIdentity($request);
+
+        if (! $identity) {
+            return $this->identityRequired();
+        }
+
         $product = Product::find($validated['product_id']);
+
         if (! $product) {
             return response()->json([
                 'status' => 'error',
@@ -85,19 +81,20 @@ class CartController extends Controller
             ], 404);
         }
 
-        $cart = $this->resolveCart($request);
-        $qty = $validated['qty'] ?? 1;
+        $cart = $this->resolveCart($request, $identity);
+        $qty = (int) ($validated['qty'] ?? 1);
         $sourceType = $validated['source_type'] ?? 'catalog';
         $buildId = $validated['build_id'] ?? ($sourceType === 'builder' ? (string) new ObjectId : null);
 
-        // Cek stok tersedia (fail fast sebelum masuk keranjang)
         $existingQty = 0;
+
         if ($sourceType === 'catalog') {
             $existingQty = (int) (CartItem::where('cart_id', $cart->_id)
                 ->where('product_id', $product->_id)
                 ->where('source_type', 'catalog')
                 ->first()?->qty ?? 0);
         }
+
         if ($product->stock < $existingQty + $qty) {
             return response()->json([
                 'status' => 'error',
@@ -105,7 +102,6 @@ class CartController extends Controller
             ], 422);
         }
 
-        // Jika katalog biasa dan produk sudah ada di keranjang, update qty
         if ($sourceType === 'catalog') {
             $existingItem = CartItem::where('cart_id', $cart->_id)
                 ->where('product_id', $product->_id)
@@ -127,7 +123,6 @@ class CartController extends Controller
             }
         }
 
-        // Buat CartItem baru
         $item = CartItem::create([
             'cart_id' => $cart->_id,
             'product_id' => $product->_id,
@@ -147,11 +142,17 @@ class CartController extends Controller
     }
 
     /**
-     * Hapus item dari keranjang.
-     * DELETE /api/cart/items/{id}?user_id=... atau ?session_id=...
+     * Hapus item dari keranjang milik sendiri.
+     * DELETE /api/cart/items/{id}?session_id=...
      */
     public function removeItem(Request $request, string $itemId): JsonResponse
     {
+        $identity = $this->resolveIdentity($request);
+
+        if (! $identity) {
+            return $this->identityRequired();
+        }
+
         $item = CartItem::find($itemId);
 
         if (! $item) {
@@ -161,24 +162,17 @@ class CartController extends Controller
             ], 404);
         }
 
-        // Verifikasi kepemilikan: item harus milik cart user/session peminta
-        if ($request->query('user_id') || $request->input('user_id')
-            || $request->query('session_id') || $request->input('session_id')) {
-            $cart = $this->resolveCart($request);
-            if ((string) $item->cart_id !== (string) $cart->_id) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Item ini bukan milik keranjang Anda',
-                ], 403);
-            }
-        } else {
-            $cart = Cart::find($item->cart_id);
-        }
-        $item->delete();
+        $cart = $this->resolveCart($request, $identity);
 
-        if ($cart) {
-            $this->recalculateCart($cart);
+        if ((string) $item->cart_id !== (string) $cart->_id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Item ini bukan milik keranjang Anda',
+            ], 403);
         }
+
+        $item->delete();
+        $this->recalculateCart($cart);
 
         return response()->json([
             'status' => 'success',
@@ -192,7 +186,13 @@ class CartController extends Controller
      */
     public function clear(Request $request): JsonResponse
     {
-        $cart = $this->resolveCart($request);
+        $identity = $this->resolveIdentity($request);
+
+        if (! $identity) {
+            return $this->identityRequired();
+        }
+
+        $cart = $this->resolveCart($request, $identity);
 
         CartItem::where('cart_id', $cart->_id)->delete();
         $cart->total_price = 0;
@@ -205,44 +205,57 @@ class CartController extends Controller
     }
 
     /**
-     * Cari atau buat keranjang belanja untuk user/session.
+     * @param  array{user_id: string|null, session_id: string|null, user: User|null}  $identity
      */
-    private function resolveCart(Request $request): Cart
+    private function resolveCart(Request $request, array $identity): Cart
     {
-        $userId = $request->input('user_id', $request->query('user_id'));
-        $sessionId = $request->input('session_id', $request->query('session_id'));
-
-        if ($userId) {
+        if ($identity['user_id'] !== null) {
             return Cart::firstOrCreate(
-                ['user_id' => $userId],
-                ['total_price' => 0]
+                ['user_id' => $identity['user_id']],
+                ['total_price' => 0],
             );
         }
 
-        if ($sessionId) {
-            return Cart::firstOrCreate(
-                ['session_id' => $sessionId],
-                ['total_price' => 0]
-            );
-        }
-
-        // Default session untuk testing cepat
         return Cart::firstOrCreate(
-            ['session_id' => 'guest-demo-session'],
-            ['total_price' => 0]
+            ['session_id' => $identity['session_id']],
+            ['total_price' => 0],
         );
     }
 
     /**
-     * Hitung ulang total keranjang.
+     * @return Collection<int, array<string, mixed>>
      */
+    private function groupBuilds(Cart $cart, string $sourceType)
+    {
+        return $cart->items->where('source_type', $sourceType)
+            ->groupBy('build_id')
+            ->map(static function ($items, $buildId): array {
+                return [
+                    'build_id' => $buildId,
+                    'build_name' => $items->first()?->build_name,
+                    'total_price' => $items->sum(static fn ($item): float => (float) $item->price_snapshot * (int) $item->qty),
+                    'components' => $items->values(),
+                ];
+            })
+            ->values();
+    }
+
     private function recalculateCart(Cart $cart): void
     {
         $total = CartItem::where('cart_id', $cart->_id)
             ->get()
-            ->sum(fn ($i) => $i->price_snapshot * $i->qty);
+            ->sum(static fn ($item): float => (float) $item->price_snapshot * (int) $item->qty);
 
         $cart->total_price = (float) $total;
         $cart->save();
+    }
+
+    private function identityRequired(): JsonResponse
+    {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Wajib login atau sertakan session_id',
+            'errors' => ['session_id' => ['Wajib login atau sertakan session_id']],
+        ], 422);
     }
 }

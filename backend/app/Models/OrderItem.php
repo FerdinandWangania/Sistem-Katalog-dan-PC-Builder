@@ -37,6 +37,10 @@ class OrderItem extends Model
         'price_list_snapshot',
     ];
 
+    protected $hidden = [
+        'hpp_snapshot',
+    ];
+
     protected function casts(): array
     {
         return [
