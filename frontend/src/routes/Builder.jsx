@@ -720,8 +720,11 @@ function BuilderInner() {
   const clearSlot = (key) => setSel((s) => ({ ...s, [key]: null }));
   const clearAll = () => {
     setSel({});
+    setQty({});
     setBuildName('');
     setNameTouched(false);
+    setBrandFilter('');
+    setSocketFilter('');
     setIgnorePsu(false);
   };
 
