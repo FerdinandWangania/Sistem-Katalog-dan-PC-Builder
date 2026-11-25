@@ -341,7 +341,12 @@ function PickerModal({ slotKey, initialBrand = '', initialSocket = '', onPick, o
             {brands.map((b) => (
               <button
                 key={b}
-                onClick={() => setBrand((v) => (v === b ? '' : b))}
+                onClick={() => {
+                  setBrand((v) => (v === b ? '' : b));
+                  // Socket milik brand lama bisa mustahil untuk brand baru
+                  // (mis. AM5 untuk Intel) -> kosongkan agar tak contradiction.
+                  setSocket('');
+                }}
                 aria-pressed={brand === b}
                 className={`rounded-full border px-3 py-1 text-[0.75rem] font-bold cursor-pointer ${
                   brand === b ? 'bg-ink text-surface border-transparent' : 'bg-surface text-secondary border-border'
