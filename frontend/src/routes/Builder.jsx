@@ -643,6 +643,27 @@ function BuilderInner() {
         });
         setAnalysis(res.data);
         setValidateError(null);
+        // Bersihkan pilihan basi (mis. ID mock-* dari era offline yang tak ada
+        // di database): takkan lolos validasi selamanya, jadi lepas otomatis.
+        const staleIds = new Set();
+        (res.data?.errors || []).forEach((m, i) => {
+          const d = res.data?.error_details?.[i];
+          if ((d?.rule === 'RULE-05' || !d) && typeof m === 'string') {
+            const mt = m.match(/tidak ditemukan \(ID: (.+)\)/);
+            if (mt) staleIds.add(mt[1]);
+          }
+        });
+        if (staleIds.size > 0) {
+          const hits = Object.entries(sel).filter(([, p]) => p && staleIds.has(String(p._id || p.id)));
+          if (hits.length > 0) {
+            setSel((s) => {
+              const next = { ...s };
+              for (const [k] of hits) delete next[k];
+              return next;
+            });
+            toast.success(`${hits.length} pilihan lama tak tersedia di server, dibersihkan otomatis. Pilih ulang komponennya.`);
+          }
+        }
       } catch (e) {
         if (shouldMock(e)) {
           const t = Object.entries(sel).reduce((sum, [k, p]) => sum + (p ? effectivePrice(p) * qtyOf(k) : 0), 0);
