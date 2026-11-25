@@ -496,9 +496,7 @@ function KeranjangInner() {
             </div>
             <button
               className={btnClasses('cta', null, 'w-full mt-4 justify-center')}
-              disabled
-              title="Checkout hadir di FE-08"
-              onClick={() => toast.success('Checkout hadir di FE-08.')}
+              onClick={() => navigate('/checkout')}
             >
               Beli Sekarang
             </button>

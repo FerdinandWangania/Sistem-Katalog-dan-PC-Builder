@@ -9,6 +9,9 @@ import Katalog from './routes/Katalog.jsx';
 import DetailProduk from './routes/DetailProduk.jsx';
 import Builder from './routes/Builder.jsx';
 import Keranjang from './routes/Keranjang.jsx';
+import Checkout from './routes/Checkout.jsx';
+import Pesanan from './routes/Pesanan.jsx';
+import PesananDetail from './routes/PesananDetail.jsx';
 
 const page = (title) => <Placeholder title={title} />;
 
@@ -18,10 +21,10 @@ const router = createBrowserRouter([
   { path: '/produk/:id', element: <DetailProduk /> },
   { path: '/builder', element: <Builder /> },
   { path: '/keranjang', element: <Keranjang /> },
-  { path: '/checkout', element: page('Checkout') },
+  { path: '/checkout', element: <Checkout /> },
   { path: '/login', element: page('Login') },
-  { path: '/pesanan', element: page('Pesanan Saya') },
-  { path: '/pesanan/:id', element: page('Detail Pesanan') },
+  { path: '/pesanan', element: <Pesanan /> },
+  { path: '/pesanan/:id', element: <PesananDetail /> },
   { path: '/paket', element: page('Paket Rakitan') },
   { path: '/paket/:id', element: page('Detail Paket') },
   { path: '/promo', element: page('Semua Promo') },
