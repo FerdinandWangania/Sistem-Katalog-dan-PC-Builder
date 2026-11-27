@@ -293,8 +293,15 @@ function CheckoutInner() {
             <section className="bg-surface border border-border rounded-3xl px-5 py-4">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="m-0 text-[1rem] font-extrabold">Alamat Pengiriman</h2>
-                <button className={btnClasses('secondary', 'sm')} onClick={() => { setAddrForm(null); setAddrModal(true); }}>
-                  Ubah
+                <button
+                  className={btnClasses('secondary', 'sm')}
+                  onClick={() => {
+                    setAddrForm(null);
+                    if (addresses.length === 0) openAddrForm();
+                    setAddrModal(true);
+                  }}
+                >
+                  {addresses.length > 0 ? 'Ubah' : (<><Plus className="w-3.5 h-3.5" /> Tambah Alamat</>)}
                 </button>
               </div>
               {selectedAddress ? (
@@ -312,11 +319,8 @@ function CheckoutInner() {
                   <p className="m-0 mt-0.5 text-[0.75rem] text-muted">Penerima: {selectedAddress.recipient}</p>
                 </div>
               ) : (
-                <div className="mt-3 pt-3 border-t border-border flex items-center gap-2 flex-wrap">
-                  <p className="m-0 text-[0.85rem] text-secondary flex-1 min-w-[180px]">Belum ada alamat. Tambah dulu sebelum checkout.</p>
-                  <button className={btnClasses('primary', 'sm')} onClick={() => { setAddrForm(null); openAddrForm(); setAddrModal(true); }}>
-                    <Plus className="w-4 h-4" /> Tambah Alamat
-                  </button>
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="m-0 text-[0.85rem] text-secondary">Belum ada alamat. Tambah dulu sebelum checkout.</p>
                 </div>
               )}
             </section>
