@@ -7,23 +7,25 @@ import {
   ChevronLeft,
   CircleAlert,
   CreditCard,
-  MapPin,
   Package,
   Pencil,
+  Plus,
   QrCode,
   Store,
+  Trash2,
   Truck,
   Wallet,
 } from 'lucide-react';
 import { getCart } from '../lib/cart.js';
 import { checkoutOrder } from '../lib/orders.js';
+import { createAddress, deleteAddress, formatAddress, listAddresses, updateAddress } from '../lib/addresses.js';
 import { effectivePrice, formatIDR } from '../lib/catalog.js';
 import { Shell } from '../components/Layout.jsx';
+import { Modal } from '../components/Modal.jsx';
 import { EmptyState, ErrorState, Skeleton } from '../components/States.jsx';
 import { ToastProvider, useToast } from '../components/Toast.jsx';
 import { btnClasses } from '../components/Button.jsx';
 
-const ADDRESS_KEY = 'bw_address';
 const QRIS_LIMIT = 10000000;
 const SHIPPING_FLAT = 25000;
 const CC_FEE_RATE = 0.02;
@@ -34,21 +36,6 @@ const METHODS = [
   { key: 'va_bca', label: 'VA BCA', sub: 'VA', provider: 'bca_va', Icon: Wallet },
   { key: 'va_mandiri', label: 'VA Mandiri', sub: 'VA', provider: 'mandiri_va', Icon: Wallet },
 ];
-
-function loadAddress() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(ADDRESS_KEY) || '{}');
-    return {
-      name: raw.name || '',
-      phone: raw.phone || '',
-      street: raw.street || '',
-      city: raw.city || '',
-      zip: raw.zip || '',
-    };
-  } catch {
-    return { name: '', phone: '', street: '', city: '', zip: '' };
-  }
-}
 
 function thumbOf(p, product) {
   const img = product?.image || p?.image;
@@ -66,12 +53,14 @@ function CheckoutInner() {
   const navigate = useNavigate();
   const [cart, setCart] = useState(null);
   const [error, setError] = useState(null);
-  const [address, setAddress] = useState(loadAddress);
-  const [editingAddress, setEditingAddress] = useState(() => {
-    const a = loadAddress();
-    return !(a.name && a.phone && a.street && a.city);
-  });
+  const [addresses, setAddresses] = useState([]);
+  const [addrsAreMock, setAddrsAreMock] = useState(false);
+  const [selectedAddrId, setSelectedAddrId] = useState(null);
+  const [addrModal, setAddrModal] = useState(false);
+  const [addrForm, setAddrForm] = useState(null); // null | {id?} — mode tambah/edit di modal
+  const [addrFields, setAddrFields] = useState({ label: '', recipient: '', phone: '', address: '', city: '', is_default: false });
   const [fieldErrors, setFieldErrors] = useState({});
+  const [addrBusy, setAddrBusy] = useState(false);
   const [shipping, setShipping] = useState('kurir'); // kurir | pickup
   const [method, setMethod] = useState('va_bca');
   const [showAllMethods, setShowAllMethods] = useState(false);
@@ -87,7 +76,25 @@ function CheckoutInner() {
         setError(e);
       }
     })();
+    refreshAddresses();
   }, []);
+
+  const refreshAddresses = async () => {
+    try {
+      const { list, isMock } = await listAddresses();
+      setAddresses(list);
+      setAddrsAreMock(isMock);
+      setSelectedAddrId((prev) => {
+        if (prev && list.some((a) => (a._id || a.id) === prev)) return prev;
+        const def = list.find((a) => a.is_default) || list[0];
+        return def ? def._id || def.id : null;
+      });
+    } catch (e) {
+      toast.error(e.message || 'Gagal memuat daftar alamat.');
+    }
+  };
+
+  const selectedAddress = addresses.find((a) => (a._id || a.id) === selectedAddrId) || null;
 
   const catalogItems = cart?.catalog_items || [];
   const builds = [...(cart?.builder_builds || []), ...(cart?.package_builds || [])];
@@ -101,21 +108,75 @@ function CheckoutInner() {
   const methodCfg = METHODS.find((m) => m.key === method) || METHODS[2];
   const visibleMethods = showAllMethods ? METHODS : METHODS.slice(0, 3);
 
-  const patchAddress = (k, v) => {
-    setAddress((a) => ({ ...a, [k]: v }));
+  const patchAddrField = (k, v) => {
+    setAddrFields((a) => ({ ...a, [k]: v }));
     setFieldErrors((e) => ({ ...e, [k]: null }));
   };
 
-  const validateAddress = () => {
+  const validateAddrForm = () => {
     const errs = {};
-    if (!address.name.trim()) errs.name = 'Nama penerima wajib diisi.';
-    if (!address.phone.trim()) errs.phone = 'No. telepon wajib diisi.';
-    else if (!/^[0-9+()\-.\\s]{9,16}$/.test(address.phone.trim())) errs.phone = 'No. telepon tidak valid (9–16 digit).';
-    if (!address.street.trim()) errs.street = 'Alamat lengkap wajib diisi.';
-    if (!address.city.trim()) errs.city = 'Kota wajib diisi.';
-    if (address.zip && !/^[0-9]{5}$/.test(address.zip.trim())) errs.zip = 'Kode pos harus 5 digit.';
+    const v = addrFields;
+    if (!String(v.label || '').trim()) errs.label = 'Label wajib diisi (cth. Rumah/Kantor).';
+    if (!String(v.recipient || '').trim()) errs.recipient = 'Nama penerima wajib diisi.';
+    if (!String(v.phone || '').trim()) errs.phone = 'No. telepon wajib diisi.';
+    else if (!/^[0-9+()\-.\s]{9,16}$/.test(String(v.phone).trim())) errs.phone = 'No. telepon tidak valid (9–16 digit).';
+    if (!String(v.address || '').trim()) errs.address = 'Alamat lengkap wajib diisi.';
+    if (!String(v.city || '').trim()) errs.city = 'Kota wajib diisi.';
     setFieldErrors(errs);
-    return Object.keys(errs).length === 0;
+    return { ok: Object.keys(errs).length === 0, errs };
+  };
+
+  const openAddrForm = (existing = null) => {
+    setFieldErrors({});
+    setAddrFields(
+      existing
+        ? { label: existing.label || '', recipient: existing.recipient || '', phone: existing.phone || '', address: existing.address || '', city: existing.city || '', is_default: Boolean(existing.is_default) }
+        : { label: '', recipient: '', phone: '', address: '', city: '', is_default: addresses.length === 0 },
+    );
+    setAddrForm(existing ? { id: existing._id || existing.id } : {});
+  };
+
+  const saveAddrForm = async () => {
+    const { ok, errs } = validateAddrForm();
+    if (!ok) {
+      toast.error(errs._global || 'Lengkapi alamat dulu.');
+      return;
+    }
+    setAddrBusy(true);
+    try {
+      const payload = { ...addrFields, label: addrFields.label.trim(), recipient: addrFields.recipient.trim(), phone: addrFields.phone.trim(), address: addrFields.address.trim(), city: addrFields.city.trim() };
+      let savedId = null;
+      if (addrForm?.id) {
+        const res = await updateAddress(addrForm.id, payload);
+        savedId = res.data?._id || res.data?.id || addrForm.id;
+        toast.success('Alamat berhasil diubah.');
+      } else {
+        const res = await createAddress(payload);
+        savedId = res.data?._id || res.data?.id;
+        toast.success('Alamat berhasil ditambahkan.');
+      }
+      setAddrForm(null);
+      await refreshAddresses();
+      if (savedId) setSelectedAddrId(savedId);
+    } catch (e) {
+      if (e.fields) setFieldErrors(e.fields);
+      toast.error(e.payload?.message || e.message || 'Gagal menyimpan alamat.');
+    } finally {
+      setAddrBusy(false);
+    }
+  };
+
+  const removeAddress = async (id) => {
+    setAddrBusy(true);
+    try {
+      await deleteAddress(id);
+      toast.success('Alamat dihapus.');
+      await refreshAddresses();
+    } catch (e) {
+      toast.error(e.message || 'Gagal menghapus alamat.');
+    } finally {
+      setAddrBusy(false);
+    }
   };
 
   const submit = async () => {
@@ -124,26 +185,25 @@ function CheckoutInner() {
       toast.error(`QRIS melebihi batas maksimal (${formatIDR(QRIS_LIMIT)}). Pilih metode lain.`);
       return;
     }
-    if (!validateAddress()) {
-      setEditingAddress(true);
-      toast.error('Lengkapi alamat pengiriman dulu.');
+    if (!selectedAddress) {
+      setAddrModal(true);
+      toast.error('Pilih atau tambah alamat pengiriman dulu.');
       return;
     }
     setBusy(true);
     setBuildErrors([]);
     try {
-      try {
-        localStorage.setItem(ADDRESS_KEY, JSON.stringify(address));
-      } catch {
-        // abaikan
-      }
-      const shippingAddress = `${address.name.trim()} | ${address.phone.trim()} | ${address.street.trim()}, ${address.city.trim()}${address.zip ? ` ${address.zip.trim()}` : ''}`;
-      // Simulasi: backend tak punya field fee, jadi fee CC digabung ke shipping_fee.
-      const res = await checkoutOrder({
-        shipping_address: shippingAddress,
+      // Backend P2: kirim address_id bila alamat berasal dari server;
+      // mode mock/legacy kirim string (address_id mock tak dikenal backend).
+      const body = {
         shipping_fee: ongkir + fee,
         gateway_provider: methodCfg.provider,
-      });
+        payment_method: method === 'qris' ? 'qris' : method === 'cc' ? 'credit_card' : 'bank_transfer',
+      };
+      if (addrsAreMock) body.shipping_address = formatAddress(selectedAddress);
+      else body.address_id = selectedAddress._id || selectedAddress.id;
+      // Simulasi: backend tak punya field fee khusus, jadi fee CC digabung ke shipping_fee.
+      const res = await checkoutOrder(body);
       const orderId = res.data?.order?._id;
       toast.success('Checkout berhasil! Lanjut ke pembayaran.');
       navigate(orderId ? `/pesanan/${orderId}` : '/pesanan');
@@ -229,75 +289,146 @@ function CheckoutInner() {
               </div>
             )}
 
-            {/* Alamat */}
+            {/* Alamat Pengiriman (display ala mockup + modal Daftar Alamat) */}
             <section className="bg-surface border border-border rounded-3xl px-5 py-4">
               <div className="flex items-center justify-between gap-2">
-                <h2 className="m-0 text-[1rem] font-extrabold inline-flex items-center gap-2">
-                  <MapPin className="w-4 h-4" /> Alamat Pengiriman
-                </h2>
-                {!editingAddress && (
-                  <button className={btnClasses('secondary', 'sm')} onClick={() => setEditingAddress(true)}>
-                    <Pencil className="w-3.5 h-3.5" /> Ubah
-                  </button>
-                )}
+                <h2 className="m-0 text-[1rem] font-extrabold">Alamat Pengiriman</h2>
+                <button className={btnClasses('secondary', 'sm')} onClick={() => { setAddrForm(null); setAddrModal(true); }}>
+                  Ubah
+                </button>
               </div>
-              {editingAddress ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                  <label className="block text-[0.78rem] font-bold text-secondary">
-                    Nama penerima
-                    <input value={address.name} onChange={(e) => patchAddress('name', e.target.value)} placeholder="Nama lengkap" className={`${inputCls(fieldErrors.name)} mt-1`} />
-                    {fieldErrors.name && <span className="text-danger font-semibold">{fieldErrors.name}</span>}
-                  </label>
-                  <label className="block text-[0.78rem] font-bold text-secondary">
-                    No. telepon
-                    <input value={address.phone} onChange={(e) => patchAddress('phone', e.target.value)} placeholder="08xxxxxxxxxx" inputMode="tel" className={`${inputCls(fieldErrors.phone)} mt-1`} />
-                    {fieldErrors.phone && <span className="text-danger font-semibold">{fieldErrors.phone}</span>}
-                  </label>
-                  <label className="block text-[0.78rem] font-bold text-secondary sm:col-span-2">
-                    Alamat lengkap
-                    <textarea value={address.street} onChange={(e) => patchAddress('street', e.target.value)} placeholder="Jalan, nomor rumah, patokan" rows={2} className={`${inputCls(fieldErrors.street)} mt-1`} />
-                    {fieldErrors.street && <span className="text-danger font-semibold">{fieldErrors.street}</span>}
-                  </label>
-                  <label className="block text-[0.78rem] font-bold text-secondary">
-                    Kota
-                    <input value={address.city} onChange={(e) => patchAddress('city', e.target.value)} placeholder="Kota / kabupaten" className={`${inputCls(fieldErrors.city)} mt-1`} />
-                    {fieldErrors.city && <span className="text-danger font-semibold">{fieldErrors.city}</span>}
-                  </label>
-                  <label className="block text-[0.78rem] font-bold text-secondary">
-                    Kode pos <span className="font-normal text-muted">(opsional)</span>
-                    <input value={address.zip} onChange={(e) => patchAddress('zip', e.target.value)} placeholder="12345" inputMode="numeric" className={`${inputCls(fieldErrors.zip)} mt-1`} />
-                    {fieldErrors.zip && <span className="text-danger font-semibold">{fieldErrors.zip}</span>}
-                  </label>
-                  <div className="sm:col-span-2">
-                    <button
-                      className={btnClasses('primary', 'sm')}
-                      onClick={() => {
-                        if (validateAddress()) {
-                          try {
-                            localStorage.setItem(ADDRESS_KEY, JSON.stringify(address));
-                          } catch {
-                            // abaikan
-                          }
-                          setEditingAddress(false);
-                        }
-                      }}
-                    >
-                      <Check className="w-4 h-4" /> Simpan Alamat
+              {selectedAddress ? (
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="m-0 text-[0.9rem] font-bold">
+                    {selectedAddress.label} <span className="text-muted font-normal">|</span>{' '}
+                    <span className="text-secondary font-semibold">+{String(selectedAddress.phone || '').replace(/^\+/, '')}</span>{' '}
+                    {selectedAddress.is_default && (
+                      <span className="ml-1 bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[0.7rem] font-extrabold">Alamat Utama</span>
+                    )}
+                  </p>
+                  <p className="m-0 mt-1 text-[0.85rem] text-secondary">
+                    {selectedAddress.address}, {selectedAddress.city}
+                  </p>
+                  <p className="m-0 mt-0.5 text-[0.75rem] text-muted">Penerima: {selectedAddress.recipient}</p>
+                </div>
+              ) : (
+                <div className="mt-3 pt-3 border-t border-border flex items-center gap-2 flex-wrap">
+                  <p className="m-0 text-[0.85rem] text-secondary flex-1 min-w-[180px]">Belum ada alamat. Tambah dulu sebelum checkout.</p>
+                  <button className={btnClasses('primary', 'sm')} onClick={() => { setAddrForm(null); openAddrForm(); setAddrModal(true); }}>
+                    <Plus className="w-4 h-4" /> Tambah Alamat
+                  </button>
+                </div>
+              )}
+            </section>
+
+            <Modal open={addrModal} title={addrForm ? (addrForm.id ? 'Ubah Alamat' : 'Tambah Alamat') : 'Daftar Alamat'} onClose={() => { setAddrModal(false); setAddrForm(null); }}>
+              {addrForm ? (
+                <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label className="block text-[0.78rem] font-bold text-secondary">
+                      Label <span className="font-normal text-muted">(Rumah/Kantor)</span>
+                      <input value={addrFields.label} onChange={(e) => patchAddrField('label', e.target.value)} placeholder="Rumah" className={`${inputCls(fieldErrors.label)} mt-1`} />
+                      {fieldErrors.label && <span className="text-danger font-semibold">{fieldErrors.label}</span>}
+                    </label>
+                    <label className="block text-[0.78rem] font-bold text-secondary">
+                      Nama penerima
+                      <input value={addrFields.recipient} onChange={(e) => patchAddrField('recipient', e.target.value)} placeholder="Nama lengkap" className={`${inputCls(fieldErrors.recipient)} mt-1`} />
+                      {fieldErrors.recipient && <span className="text-danger font-semibold">{fieldErrors.recipient}</span>}
+                    </label>
+                    <label className="block text-[0.78rem] font-bold text-secondary sm:col-span-2">
+                      No. telepon
+                      <input value={addrFields.phone} onChange={(e) => patchAddrField('phone', e.target.value)} placeholder="08xxxxxxxxxx" inputMode="tel" className={`${inputCls(fieldErrors.phone)} mt-1`} />
+                      {fieldErrors.phone && <span className="text-danger font-semibold">{fieldErrors.phone}</span>}
+                    </label>
+                    <label className="block text-[0.78rem] font-bold text-secondary sm:col-span-2">
+                      Alamat lengkap
+                      <textarea value={addrFields.address} onChange={(e) => patchAddrField('address', e.target.value)} placeholder="Jalan, nomor rumah, patokan" rows={2} className={`${inputCls(fieldErrors.address)} mt-1`} />
+                      {fieldErrors.address && <span className="text-danger font-semibold">{fieldErrors.address}</span>}
+                    </label>
+                    <label className="block text-[0.78rem] font-bold text-secondary sm:col-span-2">
+                      Kota
+                      <input value={addrFields.city} onChange={(e) => patchAddrField('city', e.target.value)} placeholder="Kota / kabupaten" className={`${inputCls(fieldErrors.city)} mt-1`} />
+                      {fieldErrors.city && <span className="text-danger font-semibold">{fieldErrors.city}</span>}
+                    </label>
+                    <label className="sm:col-span-2 inline-flex items-center gap-2 text-[0.82rem] font-semibold cursor-pointer">
+                      <input type="checkbox" checked={Boolean(addrFields.is_default)} onChange={(e) => patchAddrField('is_default', e.target.checked)} className="w-4 h-4 accent-primary" />
+                      Jadikan alamat utama
+                    </label>
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <button className={btnClasses('secondary', 'sm')} disabled={addrBusy} onClick={() => setAddrForm(null)}>
+                      Kembali
+                    </button>
+                    <button className={btnClasses('primary', 'sm')} disabled={addrBusy} onClick={saveAddrForm}>
+                      <Check className="w-4 h-4" /> {addrBusy ? 'Menyimpan…' : 'Simpan Alamat'}
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="mt-3 pt-3 border-t border-border">
-                  <p className="m-0 text-[0.9rem] font-bold">
-                    {address.name} <span className="text-muted font-normal">|</span> <span className="text-secondary font-semibold">{address.phone}</span>
-                  </p>
-                  <p className="m-0 mt-1 text-[0.85rem] text-secondary">
-                    {address.street}, {address.city}
-                    {address.zip ? ` ${address.zip}` : ''}
-                  </p>
+                <div className="flex flex-col gap-3">
+                  {fieldErrors._global && <p className="m-0 text-danger text-[0.82rem] font-semibold">{fieldErrors._global}</p>}
+                  {addresses.length === 0 && (
+                    <p className="m-0 text-[0.85rem] text-secondary">Belum ada alamat tersimpan.</p>
+                  )}
+                  {addresses.map((a) => {
+                    const aid = a._id || a.id;
+                    const picked = aid === selectedAddrId;
+                    return (
+                      <div key={aid} className={`border rounded-2xl px-4 py-3 ${picked ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="checkout-address"
+                            checked={picked}
+                            onChange={() => setSelectedAddrId(aid)}
+                            aria-label={`Pilih alamat ${a.label}`}
+                            className="w-4 h-4 accent-primary shrink-0 cursor-pointer"
+                          />
+                          {a.is_default && (
+                            <span className="bg-primary text-surface rounded-full px-2 py-0.5 text-[0.65rem] font-extrabold shrink-0">UTAMA</span>
+                          )}
+                          <strong className="text-[0.88rem] truncate">
+                            {a.label} | +{String(a.phone || '').replace(/^\+/, '')}
+                          </strong>
+                          <span className="ml-auto flex gap-1.5 shrink-0">
+                            <button
+                              onClick={() => openAddrForm(a)}
+                              disabled={addrBusy}
+                              aria-label={`Ubah alamat ${a.label}`}
+                              title="Ubah"
+                              className="inline-flex items-center gap-1 rounded-full border border-primary/40 text-primary bg-transparent px-2.5 py-1 text-[0.75rem] font-bold cursor-pointer hover:bg-primary/10"
+                            >
+                              <Pencil className="w-3.5 h-3.5" /> Edit
+                            </button>
+                            <button
+                              onClick={() => removeAddress(aid)}
+                              disabled={addrBusy}
+                              aria-label={`Hapus alamat ${a.label}`}
+                              title="Hapus"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-danger/40 text-danger bg-transparent cursor-pointer hover:bg-danger/10"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </span>
+                        </div>
+                        <p className="m-0 mt-1 text-[0.82rem] text-secondary">
+                          {a.address}, {a.city} <span className="text-muted">· {a.recipient}</span>
+                        </p>
+                      </div>
+                    );
+                  })}
+                  <button
+                    className={btnClasses('cta', 'sm', 'justify-center')}
+                    disabled={addrBusy || addresses.length >= 10}
+                    title={addresses.length >= 10 ? 'Maksimal 10 alamat' : 'Tambah alamat baru'}
+                    onClick={() => openAddrForm()}
+                  >
+                    <Plus className="w-4 h-4" /> Tambah Alamat
+                  </button>
+                  {addresses.length >= 10 && <p className="m-0 text-[0.75rem] text-muted">Maksimal 10 alamat per akun.</p>}
                 </div>
               )}
-            </section>
+            </Modal>
 
             {/* Detail pesanan */}
             <section className="bg-surface border border-border rounded-3xl px-5 py-4">
