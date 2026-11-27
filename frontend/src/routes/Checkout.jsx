@@ -7,7 +7,6 @@ import {
   ChevronLeft,
   CircleAlert,
   CreditCard,
-  Package,
   Pencil,
   Plus,
   QrCode,
@@ -442,9 +441,7 @@ function CheckoutInner() {
 
             {/* Detail pesanan */}
             <section className="bg-surface border border-border rounded-3xl px-5 py-4">
-              <h2 className="m-0 text-[1rem] font-extrabold inline-flex items-center gap-2">
-                <Package className="w-4 h-4" /> Detail Pesanan
-              </h2>
+              <h2 className="m-0 text-[1rem] font-extrabold">Detail Pesanan</h2>
               <ul className="m-0 mt-2 p-0 list-none">
                 {catalogItems.map((item) => {
                   const p = item.product || {};
