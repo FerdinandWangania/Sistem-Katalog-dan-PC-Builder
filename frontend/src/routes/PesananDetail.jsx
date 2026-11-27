@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   Ban,
@@ -58,8 +58,13 @@ function guideSteps(provider, identifier, total) {
   return va;
 }
 
-function useCountdown(createdAt) {
-  const target = createdAt ? new Date(new Date(createdAt).getTime() + EXPIRY_HOURS * 3600e3).getTime() : null;
+function useCountdown(createdAt, expiredAt) {
+  // Pakai expired_at asli dari backend; fallback created_at + 24 jam bila tak ada.
+  const target = useMemo(() => {
+    if (expiredAt) return new Date(expiredAt).getTime();
+    if (createdAt) return new Date(new Date(createdAt).getTime() + EXPIRY_HOURS * 3600e3).getTime();
+    return null;
+  }, [createdAt, expiredAt]);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -142,7 +147,9 @@ function PesananDetailInner() {
   const provider = payment?.gateway_provider || 'bca_va';
   const providerMeta = PROVIDERS[provider] || PROVIDERS.bca_va;
   const identifier = payment?.gateway_transaction_id || order?.order_number || '-';
-  const cd = useCountdown(order?.created_at);
+  // Timer dari orders.expired_at (dibuat backend saat checkout); backend juga
+  // menolak POST pay bila sudah lewat (422 "Pesanan sudah kedaluwarsa").
+  const cd = useCountdown(order?.created_at, order?.expired_at);
   const expired = order?.status === 'pending' && cd.expired;
   const items = order?.items || [];
 
@@ -156,7 +163,8 @@ function PesananDetailInner() {
       await refresh();
     } catch (e) {
       setPayFailed(true);
-      toast.error(e.message || 'Pembayaran gagal. Coba Bayar Ulang.');
+      await refresh(); // mis. order ternyata sudah kedaluwarsa -> tampil state Kedaluwarsa
+      toast.error(e.payload?.message || e.message || 'Pembayaran gagal. Coba Bayar Ulang.');
     } finally {
       setBusy(false);
     }
@@ -349,12 +357,14 @@ function PesananDetailInner() {
                   ))}
                 </div>
                 <div className="flex gap-2 mt-4 flex-wrap">
-                  <button className={btnClasses('cta', null, 'flex-1 justify-center min-w-[200px]')} disabled={busy} onClick={pay}>
+                  <button className={btnClasses('cta', null, 'flex-1 justify-center min-w-[200px]')} disabled={busy || expired} onClick={pay}>
                     {busy ? 'Memproses…' : payFailed ? 'Bayar Ulang (Order Sama)' : 'Bayar Sekarang (Simulasi)'}
                   </button>
+                  {!expired && (
                   <button className={btnClasses('secondary', null)} disabled={busy} onClick={cancel}>
                     Batalkan Pesanan
                   </button>
+                  )}
                 </div>
               </section>
             </div>
