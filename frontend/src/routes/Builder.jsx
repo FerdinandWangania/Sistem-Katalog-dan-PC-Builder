@@ -635,8 +635,18 @@ function BuilderInner() {
     }
     const extras = ALL_ROWS.filter((r) => r.extra).map((r) => sel[r.key]).filter(Boolean).map((p) => p._id || p.id);
     if (extras.length > 0) body.extra_product_ids = extras;
+    // BE-07: kirim qty per produk (satu titik untuk validate/add/replace);
+    // tanpa field ini backend berlaku qty 1 (backward compatible).
+    const quantities = {};
+    for (const [k, p] of Object.entries(sel)) {
+      if (!p) continue;
+      const q = qtyOf(k);
+      if (q > 1) quantities[p._id || p.id] = q;
+    }
+    if (Object.keys(quantities).length > 0) body.quantities = quantities;
     return body;
-  }, [sel]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sel, qty]);
   const payloadKey = JSON.stringify(payload);
 
   // Validasi live (debounce) ke POST /builder/validate tiap ada perubahan.
@@ -751,32 +761,15 @@ function BuilderInner() {
     setCompatModal(null);
   };
 
-  // Simpan rakitan ke keranjang (FE-08): validasi backend dulu via
-  // POST /builder/add-to-cart, samakan qty > 1, lalu ke /keranjang.
+  // Simpan rakitan ke keranjang: validasi backend dulu via
+  // POST /builder/add-to-cart (qty ikut tersimpan, BE-07), lalu ke /keranjang.
   const [saving, setSaving] = useState(false);
   const saveToCart = async () => {
     if (saving) return;
     setSaving(true);
     const body = { ...JSON.parse(payloadKey), build_name: buildName.slice(0, 60), ignore_psu_warning: ignorePsu };
     try {
-      const res = await api.post('/builder/add-to-cart', { query: ownerParams(), body });
-      const buildId = res.data?.build_id;
-      // Endpoint selalu menyimpan qty 1: tulis ulang item yang qty-nya > 1
-      // (POST /cart/items mendukung source_type builder + build_id + qty).
-      const multi = Object.keys(sel).filter((k) => sel[k] && qtyOf(k) > 1);
-      if (buildId && multi.length > 0) {
-        const cartRes = await getCart();
-        const saved = [...(cartRes.data?.builder_builds || [])].find((b) => String(b.build_id) === String(buildId));
-        for (const comp of saved?.components || []) {
-          const key = multi.find((k) => String(sel[k]?._id || sel[k]?.id) === String(comp.product_id));
-          const q = key ? qtyOf(key) : 1;
-          if (q <= 1) continue;
-          await api.delete(`/cart/items/${comp._id}`, { query: ownerParams() });
-          await api.post('/cart/items', {
-            body: { ...ownerParams(), product_id: comp.product_id, qty: q, source_type: 'builder', build_id: buildId },
-          });
-        }
-      }
+      await api.post('/builder/add-to-cart', { query: ownerParams(), body });
       notifyCartChanged();
       toast.success('Rakitan masuk keranjang.');
       try {
