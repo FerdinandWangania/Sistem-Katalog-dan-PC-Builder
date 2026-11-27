@@ -94,6 +94,18 @@ class CompatibilityService
             FILTER_VALIDATE_BOOL,
         );
 
+        // Qty per produk (BE-07, opsional): ['<product_id>' => qty].
+        // Tanpa field ini perilaku lama (semua qty 1). Nilai < 1 diabaikan.
+        $quantities = [];
+        foreach ((array) ($options['quantities'] ?? $input['quantities'] ?? []) as $pid => $qty) {
+            $pid = trim((string) $pid);
+            $qty = (int) $qty;
+            if ($pid !== '' && $qty >= 1) {
+                $quantities[$pid] = $qty;
+            }
+        }
+        $qtyFor = fn (mixed $id): int => $quantities[trim((string) $id)] ?? 1;
+
         // ---------------------------------------------------------------
         // RULE-05: kelengkapan 7 slot utama + ketersediaan/stok
         // ---------------------------------------------------------------
@@ -136,8 +148,15 @@ class CompatibilityService
             $components[$slot] = $product;
             $resolvedIds[(string) $product->_id] = true;
 
-            if ((int) $product->stock < 1) {
-                $pushError("Stok {$product->name} habis.", 'RULE-05', $slot);
+            $need = $qtyFor($product->_id);
+            if ((int) $product->stock < $need) {
+                $pushError(
+                    $need > 1
+                        ? "Stok {$product->name} tidak mencukupi (tersedia: {$product->stock}, diminta: {$need})."
+                        : "Stok {$product->name} habis.",
+                    'RULE-05',
+                    $slot,
+                );
             }
         }
 
@@ -162,8 +181,15 @@ class CompatibilityService
             }
             $resolvedIds[$productKey] = true;
 
-            if ((int) $product->stock < 1) {
-                $pushError("Stok {$product->name} habis (item tambahan).", 'RULE-05', 'extra');
+            $need = $qtyFor($product->_id);
+            if ((int) $product->stock < $need) {
+                $pushError(
+                    $need > 1
+                        ? "Stok {$product->name} tidak mencukupi (tersedia: {$product->stock}, diminta: {$need}) (item tambahan)."
+                        : "Stok {$product->name} habis (item tambahan).",
+                    'RULE-05',
+                    'extra',
+                );
 
                 continue;
             }
@@ -261,8 +287,8 @@ class CompatibilityService
         // ---------------------------------------------------------------
         $cpuTdp = (int) round(SpecNormalizer::number($cpuSpecs['tdp'] ?? null) ?? 0);
         $gpuTdp = (int) round(SpecNormalizer::number($gpuSpecs['tdp'] ?? null) ?? 0);
-        $ramWatt = $ram ? self::RAM_WATT : 0;
-        $storageWatt = $ssd ? self::STORAGE_WATT : 0;
+        $ramWatt = $ram ? self::RAM_WATT * $qtyFor($ram->_id) : 0;
+        $storageWatt = $ssd ? self::STORAGE_WATT * $qtyFor($ssd->_id) : 0;
         $baseLoad = self::BASE_SYSTEM_LOAD_W;
         $totalWatt = $cpuTdp + $gpuTdp + $ramWatt + $storageWatt + $baseLoad;
         $recommendedW = (int) ceil($totalWatt * self::PSU_SAFETY_MARGIN);
@@ -308,7 +334,7 @@ class CompatibilityService
         // ---------------------------------------------------------------
         $totalPrice = 0.0;
         foreach (array_merge(array_values($components), $extras) as $product) {
-            $totalPrice += (float) $product->effective_price;
+            $totalPrice += (float) $product->effective_price * $qtyFor($product->_id);
         }
 
         $buildName = $this->resolveBuildName($options['build_name'] ?? $input['build_name'] ?? null, $cpu);
@@ -321,6 +347,7 @@ class CompatibilityService
             'warning_details' => $warningDetails,
             'missing_slots' => $missingSlots,
             'build_name' => $buildName,
+            'quantities' => $quantities,
             'total_price' => $totalPrice,
             'grand_total' => $totalPrice,
             'power_analysis' => [
@@ -355,6 +382,7 @@ class CompatibilityService
         $extraIds = [];
         $preErrors = [];
         $duplicates = [];
+        $qtyByProduct = [];
 
         foreach ($items as $item) {
             $product = $item->product ?: $this->findProduct($item->product_id);
@@ -365,10 +393,15 @@ class CompatibilityService
                 continue;
             }
 
+            $productKey = (string) $product->_id;
+            $itemQty = max(1, (int) ($item->qty ?? 1));
+            // Qty terbesar menang bila satu produk muncul di beberapa baris.
+            $qtyByProduct[$productKey] = max($qtyByProduct[$productKey] ?? 1, $itemQty);
+
             $slotField = self::CATEGORY_TO_SLOT[SpecNormalizer::category($product->category)] ?? null;
 
             if ($slotField === null) {
-                $extraIds[] = (string) $product->_id;
+                $extraIds[] = $productKey;
 
                 continue;
             }
@@ -379,7 +412,7 @@ class CompatibilityService
                 continue;
             }
 
-            $slotIds[$slotField] = (string) $product->_id;
+            $slotIds[$slotField] = $productKey;
         }
 
         $buildName = $options['build_name']
@@ -391,7 +424,10 @@ class CompatibilityService
             $input['extra_product_ids'] = $extraIds;
         }
 
-        $result = $this->analyze($input, array_merge($options, ['build_name' => $buildName]));
+        $result = $this->analyze($input, array_merge($options, [
+            'build_name' => $buildName,
+            'quantities' => $qtyByProduct,
+        ]));
 
         foreach ($duplicates as $label) {
             $message = "Komponen {$label} muncul lebih dari satu kali dalam satu rakitan.";

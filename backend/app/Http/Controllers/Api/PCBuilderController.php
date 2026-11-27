@@ -46,6 +46,7 @@ class PCBuilderController extends Controller
         $analysis = $this->compatibility->analyze($request->all(), [
             'build_name' => $request->input('build_name'),
             'ignore_psu_warning' => $request->boolean('ignore_psu_warning'),
+            'quantities' => $request->input('quantities'),
         ]);
 
         if (! $analysis['is_compatible']) {
@@ -78,7 +79,7 @@ class PCBuilderController extends Controller
                     'source_type' => 'builder',
                     'build_id' => $buildId,
                     'build_name' => $buildName,
-                    'qty' => 1,
+                    'qty' => $analysis['quantities'][(string) $product->_id] ?? 1,
                     'price_snapshot' => $product->effective_price,
                 ]);
                 $created[] = (string) $item->_id;
@@ -137,6 +138,7 @@ class PCBuilderController extends Controller
         $analysis = $this->compatibility->analyze($request->all(), [
             'build_name' => $request->input('build_name'),
             'ignore_psu_warning' => $request->boolean('ignore_psu_warning'),
+            'quantities' => $request->input('quantities'),
         ]);
 
         if (! $analysis['is_compatible']) {
@@ -170,7 +172,7 @@ class PCBuilderController extends Controller
                     'source_type' => 'builder',
                     'build_id' => $buildId,
                     'build_name' => $analysis['build_name'],
-                    'qty' => 1,
+                    'qty' => $analysis['quantities'][(string) $product->_id] ?? 1,
                     'price_snapshot' => $product->effective_price,
                 ]);
                 $newIds[] = (string) $item->_id;
