@@ -63,7 +63,10 @@ class Product extends Model
             'stock' => 'integer',
             'rating' => 'float',
             'review_count' => 'integer',
-            'specs' => 'array',
+            // JANGAN cast 'specs' ke array: cast array Laravel men-json_encode
+            // sehingga tersimpan sebagai STRING dan filter DB specs.* (socket,
+            // type, form_factor, wattage) tidak pernah match. Tanpa cast,
+            // driver menyimpan subdokumen BSON asli; baca tetap array-like.
         ];
     }
 
