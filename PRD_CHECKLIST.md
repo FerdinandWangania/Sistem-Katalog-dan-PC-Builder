@@ -99,10 +99,11 @@ Target: tiga laporan keuangan + export CSV sesuai FR-023.
 
 - [x] Impor 3.802 produk unik dari `BLESSING KOMPONEN ACC 06 NOVEMBER 2026 (2).xls`.
 - [x] 43 kategori terisi; 45 slug kategori tersedia (termasuk `sound_card` dan `capture_card`).
-- [x] 230 brand unik dari dataset; total koleksi brand 238.
+- [x] 230 brand unik dari dataset; total koleksi brand 234 (termasuk brand bawaan seeder).
 - [x] Spesifikasi dasar diekstrak dari nama/subkategori: socket, chipset, tipe RAM, kapasitas, wattage PSU, form factor, VRAM, ukuran/refresh monitor.
-- [x] Katalog dummy 40 produk dan 2 paket prebuilt diganti; paket prebuilt perlu di-seed ulang bila diperlukan.
-- [ ] Promo demo P2 (`Promo Harbolnas NVIDIA`, `Diskon Akhir Tahun Intel & Corsair`, `Flash Sale Samsung SSD`) masih aktif dan memengaruhi `effective_price`; nonaktifkan bila ingin harga murni dari XLS.
+- [x] Dataset real disimpan di `backend/database/blessing_products.json` dan dimuat oleh `ProductSeeder`; `db:setup-mongo --fresh` memakai dataset ini.
+- [x] Katalog dummy 40 produk dan 2 paket prebuilt diganti; `PrebuiltPackageSeeder` tidak lagi dipanggil karena bergantung pada produk dummy.
+- [x] Promo demo P2 (`Promo Harbolnas NVIDIA`, `Diskon Akhir Tahun Intel & Corsair`, `Flash Sale Samsung SSD`) dinonaktifkan (`is_active=false`).
 
 ## P3 - Auth Lanjutan & Kebersihan
 

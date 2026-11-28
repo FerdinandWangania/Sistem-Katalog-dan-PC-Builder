@@ -24,7 +24,7 @@ class PromotionSeeder extends Seeder
                 'discount_percentage' => 10.0,
                 'start_date' => now()->subDays(2),
                 'end_date' => now()->addDays(5),
-                'is_active' => true,
+                'is_active' => false,
             ],
             [
                 'title' => 'Diskon Akhir Tahun Intel & Corsair',
@@ -38,7 +38,7 @@ class PromotionSeeder extends Seeder
                 'discount_percentage' => 15.0,
                 'start_date' => now()->subDay(),
                 'end_date' => now()->addDays(10),
-                'is_active' => true,
+                'is_active' => false,
             ],
             [
                 'title' => 'Flash Sale Samsung SSD',
@@ -52,7 +52,7 @@ class PromotionSeeder extends Seeder
                 'discount_percentage' => 20.0,
                 'start_date' => now()->addDays(3),
                 'end_date' => now()->addDays(4),
-                'is_active' => true,
+                'is_active' => false,
             ],
         ];
 
