@@ -8,23 +8,22 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed semua collections MongoDB sesuai ERD.
-     * Urutan penting: Products harus ada sebelum Packages, Category/Brand,
-     * dan item keranjang/pesanan.
+     * Urutan penting: Category harus ada sebelum Products, lalu Brand membaca
+     * daftar brand dari Products.
      */
     public function run(): void
     {
         $this->call([
             UserSeeder::class,
-            ProductSeeder::class,
             CategorySeeder::class,
+            ProductSeeder::class,
             BrandSeeder::class,
             PromotionSeeder::class,
             PromoCodeSeeder::class,
-            PrebuiltPackageSeeder::class,
         ]);
 
         $this->command->info('');
         $this->command->info('✓ Database MongoDB (pc_store) berhasil di-seed!');
-        $this->command->info('   Collections: users, products, categories, brands, promotions, promo_codes, prebuilt_packages, package_items');
+        $this->command->info('   Collections: users, categories, products, brands, promotions, promo_codes');
     }
 }
