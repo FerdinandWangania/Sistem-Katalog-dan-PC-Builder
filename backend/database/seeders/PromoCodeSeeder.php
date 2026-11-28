@@ -19,7 +19,7 @@ class PromoCodeSeeder extends Seeder
                 'min_subtotal' => 0,
                 'start_date' => now()->subDays(2),
                 'end_date' => now()->addDays(30),
-                'is_active' => true,
+                'is_active' => false,
             ],
             [
                 'code' => 'GAMING15',
@@ -28,7 +28,7 @@ class PromoCodeSeeder extends Seeder
                 'min_subtotal' => 5_000_000,
                 'start_date' => now()->subDay(),
                 'end_date' => now()->addDays(14),
-                'is_active' => true,
+                'is_active' => false,
             ],
         ];
 

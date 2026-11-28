@@ -15,7 +15,8 @@ class BrandSeeder extends Seeder
         $knownBrands = [
             'AMD', 'Intel', 'NVIDIA', 'ASUS', 'MSI', 'Corsair', 'Seasonic',
             'Lian Li', 'NZXT', 'Samsung', 'G.Skill', 'Gigabyte', 'WD',
-            'Crucial', 'Logitech', 'Arctic',
+            'Crucial', 'Logitech', 'Arctic', 'Noctua', 'DeepCool',
+            'Cooler Master', 'be quiet!', 'TeamGroup', 'Kingston',
         ];
 
         $productBrands = Product::query()
